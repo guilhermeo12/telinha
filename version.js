@@ -1,0 +1,1 @@
+window.TELINHA_WEB_VERSION = "1.10.11";

@@ -1,0 +1,416 @@
+/* Telinha · temas. Seis vêm das fichas da tasteskill (draw.mjs --app), com o tom dos dados trocado pelo do
+   mundo do produto quando a ficha pede um "rosto"; o sétimo, Vidro, foi pedido pelo usuário e fica fora das
+   regras da skill (que proíbe vidro e desfoque). Cada bloco define os tokens de style.css e o "gesto" do estilo. */
+
+/* ================================================================ Preto · true-black-flat (seed 1954872969)
+   Elevação só por luminosidade (#000 → #111 → #2a2a2a), sem bordas nem sombras; a aba ativa é só o rótulo
+   indo de #bbb para #fff; o primário é a inversão (pílula branca, texto preto). Tom dos dados: azul de
+   fósforo de tela. */
+:root, [data-theme="preto"] {
+  color-scheme: dark;
+  --font: "Inter", system-ui, sans-serif;
+  --fs-body: 14px; --fs-small: 13px; --fs-section: 16px; --fs-title: 22px;
+  --ground: #000000; --chrome: #000000; --chrome-rule: #1a1a1a;
+  --surface: #111111; --surface-border: transparent; --raised: #1c1c1c;
+  --field: #111111; --field-border: #262626; --control-hover: #444444; --rule: #1f1f1f;
+  --text: #ffffff; --muted: #b4b4b4; --faint: #949494;
+  --accent: #5ab8ff; --accent-soft: #0f2233; --accent-ink: #9fd3ff; --accent-on: #000000;
+  --primary-bg: #ffffff; --primary-ink: #000000; --primary-hover: #e6e6e6;
+  --secondary-bg: transparent; --secondary-ink: #ffffff; --secondary-border: #444444; --secondary-hover: #1c1c1c;
+  --live: #ff4d55; --live-soft: rgba(255, 77, 85, .25); --positive: #3fc07a; --negative: #e5566f;
+  --pill-neutral-bg: #1c1c1c; --pill-neutral-ink: #ffffff; --pill-negative-bg: #2c1a20; --pill-negative-ink: #e5566f;
+  --radius-card: 20px; --radius-control: 999px; --radius-inner: 12px;
+  --gap: 14px; --pad: 22px; --gutter: 24px; --control-height: 36px; --topbar-height: 60px;
+  --float-shadow: 0 18px 50px rgba(0, 0, 0, .6);
+  /* var(--text) e não #fff: este bloco também é o :root, e um valor fixo vazava para os temas claros */
+  --tab-ink: #bbbbbb; --tab-active-ink: var(--text); --brand-mark: #5ab8ff; --range: #ffffff;
+}
+[data-theme="preto"] .navIndicator { display: none; }
+
+/* ================================================================ Terminal · data-terminal (seed 82107246)
+   Sessões longas: cartões mais escuros que o fundo, números brancos ou cinza, e toda seleção é a mesma
+   linha de 1px no tom de destaque, exatamente da largura do rótulo, na borda mais próxima. */
+[data-theme="terminal"] {
+  color-scheme: dark;
+  --font: "Public Sans", "Inter", system-ui, sans-serif;
+  --fs-body: 13px; --fs-small: 12px; --fs-section: 16px; --fs-title: 26px; --fw-title: 400;
+  --ground: #171719; --chrome: #171719; --chrome-rule: #222224;
+  --surface: #131217; --surface-border: #222224; --surface-shadow: 0 12px 28px rgba(0, 0, 0, .2); --raised: #212023;
+  --field: #131217; --field-border: #3a3a3e; --control-hover: #5a5a60; --rule: #1b1a1f;
+  --text: #ffffff; --muted: #a0a2a8; --faint: #8a8c92;
+  --accent: #4a8ad6; --accent-soft: #16202e; --accent-ink: #9cc2f0; --accent-on: #ffffff;
+  --primary-bg: #ffffff; --primary-ink: #131217; --primary-hover: #e0e0e2;
+  --secondary-bg: transparent; --secondary-ink: #ffffff; --secondary-border: #3a3a3e; --secondary-hover: #212023;
+  --live: #e5566f; --live-soft: rgba(229, 86, 111, .22); --positive: #44a282; --negative: #e5566f;
+  --pill-neutral-bg: #212023; --pill-neutral-ink: #bdbdc0; --pill-negative-bg: #2c1a20; --pill-negative-ink: #e5566f;
+  --radius-card: 6px; --radius-control: 999px; --radius-inner: 6px; --radius-field: 6px;
+  --gap: 24px; --pad: 24px; --gutter: 28px; --control-height: 34px; --topbar-height: 54px;
+  --float-shadow: 0 12px 28px rgba(0, 0, 0, .45);
+  --tab-ink: #8a8c92; --brand-mark: #ffffff; --range: #4a8ad6;
+}
+/* A seleção é a linha de 1px na borda mais próxima: a borda esquerda do item */
+[data-theme="terminal"] .navItem { border-radius: 0; }
+[data-theme="terminal"] .navIndicator { width: 1px; background: var(--accent); }
+[data-theme="terminal"] .panel h2 { font-size: 12px; font-weight: 400; color: var(--faint); }
+[data-theme="terminal"] .card { padding: 18px 20px; }
+
+/* ================================================================ Papel · achromatic-ledger (seed 1325167884)
+   Nenhuma cor de marca no cromo: o primário é quase preto, o secundário uma pílula cinza; o único tom
+   (#1d5fbf) vai no elemento principal de dados, e o resto é tinta. Plano aberto: o painel fica no fundo. */
+[data-theme="papel"] {
+  color-scheme: light;
+  --font: "Geist", "Inter", system-ui, sans-serif;
+  --fs-body: 14px; --fs-small: 12px; --fs-section: 16px; --fs-title: 24px;
+  --ground: #f8f8f8; --chrome: #f8f8f8; --chrome-rule: transparent; --panel-bg: #f8f8f8;
+  --surface: #ffffff; --surface-border: #e6e6e6; --raised: #f2f2f2;
+  --field: #ffffff; --field-border: #d4d4d4; --control-hover: #a8a8a8; --rule: #f0f0f0;
+  --text: #0a0a0a; --muted: #6b6b6b; --faint: #6b6b6b;
+  --accent: #1d5fbf; --accent-soft: #e8eef8; --accent-ink: #123d7a; --accent-on: #ffffff;
+  --primary-bg: #141414; --primary-ink: #ffffff; --primary-hover: #333333;
+  --secondary-bg: #e5e5e5; --secondary-ink: #0a0a0a; --secondary-border: transparent; --secondary-hover: #d9d9d9;
+  --live: #c4242a; --live-soft: rgba(196, 36, 42, .16); --positive: #2e7d32; --negative: #c4242a;
+  --pill-neutral-bg: #eeeeee; --pill-neutral-ink: #3d3d3d; --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
+  --radius-card: 8px; --radius-control: 6px; --radius-inner: 8px;
+  --gap: 12px; --pad: 24px; --gutter: 24px; --control-height: 36px; --topbar-height: 60px;
+  --float-shadow: 0 16px 40px rgba(0, 0, 0, .12); --scrim: rgba(10, 10, 10, .28);
+  --tab-ink: #6b6b6b; --brand-mark: #0a0a0a; --range: #141414;
+}
+[data-theme="papel"] { --avatar-bg-l: 92%; --avatar-ink-l: 26%; --avatar-sat: 20%; }
+[data-theme="papel"] .navIndicator { border-radius: 8px; background: #e9e9e9; }
+
+/* ================================================================ Moldura · framed-sheet (seed 1539797354)
+   Um "L" tingido segura o topo e o painel, sem linha entre eles; o palco é uma folha branca recuada 8px da
+   direita e de baixo, cantos de 16px, borda de 1px, sem sombra. A aba ativa é um sublinhado de 2px. */
+[data-theme="moldura"] {
+  color-scheme: light;
+  --font: "IBM Plex Sans", "Inter", system-ui, sans-serif;
+  --fs-body: 14px; --fs-small: 12px; --fs-section: 16px; --fs-title: 22px;
+  --ground: #f2f4f6; --chrome: #f2f4f6; --chrome-rule: transparent; --panel-bg: #f2f4f6; --stage-bg: #ffffff;
+  --surface: #ffffff; --surface-border: #e8eaec; --raised: #f4f6f8;
+  --field: #ffffff; --field-border: #cdced1; --control-hover: #9a9ca0; --rule: #f0f1f2;
+  --text: #131416; --muted: #5d5f60; --faint: #5d5f60;
+  --accent: #1b6c80; --accent-soft: #e3f0f3; --accent-ink: #0f4552; --accent-on: #ffffff;
+  --primary-bg: #131416; --primary-ink: #ffffff; --primary-hover: #33363a;
+  --secondary-bg: #ffffff; --secondary-ink: #131416; --secondary-border: #cdced1; --secondary-hover: #f4f6f8;
+  --live: #c4242a; --live-soft: rgba(196, 36, 42, .16); --positive: #1e7b4f; --negative: #c4242a;
+  --pill-neutral-bg: #ebedee; --pill-neutral-ink: #353736; --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
+  --radius-card: 8px; --radius-control: 6px; --radius-inner: 8px;
+  --gap: 24px; --pad: 22px; --gutter: 24px; --control-height: 32px; --topbar-height: 48px;
+  --float-shadow: 0 16px 40px rgba(19, 20, 22, .14); --scrim: rgba(19, 20, 22, .28);
+  --tab-ink: #5d5f60; --brand-mark: #1b6c80; --range: #1b6c80;
+}
+[data-theme="moldura"] { --avatar-bg-l: 92%; --avatar-ink-l: 26%; --avatar-sat: 30%; }
+[data-theme="moldura"] .navIndicator { border-radius: 6px; background: #e3e6e9; }
+/* A folha branca: toda a área de conteúdo, recuada 8px da direita e de baixo, dentro do L tingido */
+[data-theme="moldura"] .views { margin: 0 8px 8px 0; background: #ffffff; border: 1px solid #e8eaec; border-radius: 16px; overflow: hidden; }
+[data-theme="moldura"] .panel { background: #ffffff; border-right-color: #f0f1f2; }
+[data-theme="moldura"] .card { border-color: #e8eaec; }
+
+/* ================================================================ Pastel · pastel-consumer (seed 1651163792)
+   Ladrilhos claros com a tinta escura do próprio tom (#dcf1ff com #0a3a80), um raio grande (20px) que desce
+   para 10 e 8 por dentro; corpo de texto maior. O tom vai em ladrilhos pequenos e no "ao vivo"; painéis
+   com listas ficam brancos. */
+[data-theme="pastel"] {
+  color-scheme: light;
+  --font: "Manrope", "Inter", system-ui, sans-serif;
+  --fs-body: 15px; --fs-small: 13px; --fs-section: 18px; --fs-title: 28px;
+  --ground: #f3f5f7; --chrome: #f3f5f7; --chrome-rule: transparent; --panel-bg: #f3f5f7;
+  --surface: #ffffff; --surface-border: transparent; --raised: #f2f8fd;
+  --field: #ffffff; --field-border: #d6d9dd; --control-hover: #a9aeb5; --rule: #f0f2f4;
+  --text: #1b1d1f; --muted: #5c6064; --faint: #5c6064;
+  --accent: #1d5fd6; --accent-soft: #dcf1ff; --accent-ink: #0a3a80; --accent-on: #ffffff;
+  --primary-bg: #1d5fd6; --primary-ink: #ffffff; --primary-hover: #174fb4;
+  --secondary-bg: #ffffff; --secondary-ink: #1b1d1f; --secondary-border: #d6d9dd; --secondary-hover: #f2f8fd;
+  --live: #c41c29; --live-soft: #ffe1e3; --positive: #2f7a45; --negative: #c41c29;
+  --pill-neutral-bg: #eef1f4; --pill-neutral-ink: #3a3d40; --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
+  --radius-card: 20px; --radius-control: 10px; --radius-inner: 14px;
+  --gap: 20px; --pad: 22px; --gutter: 24px; --control-height: 40px; --topbar-height: 64px;
+  --float-shadow: 0 20px 50px rgba(27, 29, 31, .14); --scrim: rgba(27, 29, 31, .25);
+  --tab-ink: #5c6064; --tab-active-ink: #0a3a80; --brand-mark: #1d5fd6; --range: #1d5fd6;
+  --row-border: transparent; --row-bg: #ffffff;
+}
+[data-theme="pastel"] { --avatar-bg-l: 90%; --avatar-ink-l: 28%; --avatar-sat: 70%; --kpi-rule: #e3eef8; }
+[data-theme="pastel"] .navIndicator { border-radius: 12px; background: #dcf1ff; }
+[data-theme="pastel"] .friendRequests { background: #dcf1ff; }
+
+/* ================================================================ Editorial · editorial-greeting (seed 134170064)
+   O título vira saudação, numa serifa; painéis tonais de uma camada só (#f9f9f9 sobre branco), sem borda,
+   cantos de 22px; todo número em peso normal; controles em pílula; o tom (#1b6e66) é raro. */
+[data-theme="editorial"] {
+  color-scheme: light;
+  --font: "Instrument Sans", "Inter", system-ui, sans-serif;
+  --title-font: "Instrument Serif", Georgia, serif;
+  --fs-body: 14px; --fs-small: 12px; --fs-section: 14px; --fs-title: 34px; --fw-title: 400; --title-tracking: -0.01em;
+  --ground: #ffffff; --chrome: #ffffff; --chrome-rule: transparent; --panel-bg: #ffffff;
+  --surface: #f9f9f9; --surface-border: transparent; --raised: #f3f3f3;
+  --field: #ffffff; --field-border: #d9d9d6; --control-hover: #a3a39f; --rule: #ececea;
+  --text: #1f201d; --muted: #636361; --faint: #636361;
+  --accent: #1b6e66; --accent-soft: #e5f1ef; --accent-ink: #11463f; --accent-on: #ffffff;
+  --primary-bg: #1f201d; --primary-ink: #ffffff; --primary-hover: #3a3b37;
+  --secondary-bg: #ffffff; --secondary-ink: #1f201d; --secondary-border: #d9d9d6; --secondary-hover: #f3f3f3;
+  --live: #b42318; --live-soft: rgba(180, 35, 24, .14); --positive: #2e7d32; --negative: #b42318;
+  --pill-neutral-bg: #f3f3f3; --pill-neutral-ink: #3d3d3a; --pill-negative-bg: #fdecea; --pill-negative-ink: #7a1d14;
+  --radius-card: 22px; --radius-control: 999px; --radius-inner: 14px;
+  --gap: 16px; --pad: 22px; --gutter: 24px; --control-height: 38px; --topbar-height: 64px;
+  --float-shadow: 0 20px 50px rgba(31, 32, 29, .12); --scrim: rgba(31, 32, 29, .25);
+  --tab-ink: #636361; --brand-mark: #1b6e66; --range: #1f201d;
+  --row-border: transparent; --row-bg: #f9f9f9;
+}
+[data-theme="editorial"] { --avatar-bg-l: 90%; --avatar-ink-l: 28%; --avatar-sat: 30%; --fw-kpi: 400; }
+[data-theme="editorial"] .navIndicator { border-radius: 999px; background: #f3f3f3; }
+[data-theme="editorial"] .panel { padding-top: 26px; }
+[data-theme="editorial"] .value { font-weight: 400; }
+
+/* ================================================================ Vidro e Vidro Lite · liquid glass (pedido do usuário)
+   Fora das regras da tasteskill (que proíbe vidro e desfoque). O fundo é o quadro da transmissão que está na
+   tela, desfocado (o "ambiente" do Apple TV); barra lateral, topo, painéis e cartões são vidro: preenchimento
+   translúcido, desfoque com saturação, uma borda clara e um brilho que segue o ponteiro. Segue o modo
+   claro/escuro do sistema e respeita "reduzir transparência".
+   [data-theme^="vidro"] vale para os dois; [data-theme="vidro"] só para o completo, que soma a lente (filtro
+   SVG nos controles pequenos) e um fundo com mais detalhe e blur de verdade. O completo custa GPU/CPU: na
+   medição o vídeo do espectador chegou a cair de 58 para 21 fps; o Lite fica em 58. */
+[data-theme^="vidro"] {
+  color-scheme: dark;
+  --font: "Inter", system-ui, sans-serif;
+  --fs-body: 14px; --fs-small: 13px; --fs-section: 17px; --fs-title: 30px; --title-tracking: -0.025em;
+  --ground: #0a0a0d; --chrome: transparent; --chrome-rule: transparent; --panel-bg: transparent;
+  --glass: rgba(255, 255, 255, .075); --glass-strong: rgba(255, 255, 255, .14); --glass-edge: rgba(255, 255, 255, .16);
+  --glass-shine: rgba(255, 255, 255, .28); --glass-blur: blur(28px) saturate(175%);
+  --surface: var(--glass); --surface-border: var(--glass-edge); --raised: rgba(255, 255, 255, .08);
+  --field: rgba(255, 255, 255, .08); --field-border: rgba(255, 255, 255, .14); --control-hover: rgba(255, 255, 255, .3); --rule: rgba(255, 255, 255, .09);
+  --text: #ffffff; --muted: rgba(235, 235, 245, .72); --faint: rgba(235, 235, 245, .6);
+  --accent: #64b5ff; --accent-soft: rgba(10, 132, 255, .2); --accent-ink: #9ccfff; --accent-on: #ffffff; --link: #4da3ff;
+  --primary-bg: #ffffff; --primary-ink: #000000; --primary-hover: #f0f0f0;
+  --secondary-bg: rgba(255, 255, 255, .1); --secondary-ink: #ffffff; --secondary-border: rgba(255, 255, 255, .16); --secondary-hover: rgba(255, 255, 255, .18);
+  --live: #ff453a; --live-soft: rgba(255, 69, 58, .3); --positive: #30d158; --negative: #ff6961;
+  --pill-neutral-bg: rgba(255, 255, 255, .1); --pill-neutral-ink: #ffffff; --pill-negative-bg: rgba(255, 69, 58, .2); --pill-negative-ink: #ff8a82;
+  --radius-card: 26px; --radius-control: 999px; --radius-inner: 18px; --radius-modal: 30px; --radius-nav: 14px;
+  --gap: 14px; --pad: 20px; --gutter: 20px; --control-height: 36px; --topbar-height: 64px;
+  --float-shadow: 0 30px 80px rgba(0, 0, 0, .5); --scrim: rgba(0, 0, 0, .3);
+  --modal-bg: rgba(40, 40, 46, .55); --toast-bg: rgba(40, 40, 46, .6);
+  --tab-ink: rgba(235, 235, 245, .72); --brand-mark: #ffffff; --range: #ffffff;
+  --video-shadow: 0 0 0 1px rgba(255, 255, 255, .1), 0 24px 60px rgba(0, 0, 0, .45);
+  --frame-shadow: 0 0 0 1px rgba(255, 255, 255, .12), 0 18px 40px rgba(0, 0, 0, .45);
+  --avatar-sat: 55%; --avatar-bg-l: 42%; --avatar-ink-l: 96%; --kpi-rule: rgba(255, 255, 255, .1);
+  --ambient-filter: saturate(1.5) brightness(.55);
+  --solid: #26262b; --solid-2: #34343a; --solid-field: #1d1d21;
+}
+@media (prefers-color-scheme: light) {
+  [data-theme^="vidro"] {
+    color-scheme: light;
+    --ground: #e9e9ee;
+    --glass: rgba(255, 255, 255, .5); --glass-strong: rgba(255, 255, 255, .72); --glass-edge: rgba(255, 255, 255, .7);
+    --glass-shine: rgba(255, 255, 255, .95);
+    --raised: rgba(255, 255, 255, .45); --field: rgba(255, 255, 255, .55); --field-border: rgba(0, 0, 0, .1);
+    --control-hover: rgba(0, 0, 0, .25); --rule: rgba(0, 0, 0, .07);
+    --text: #111114; --muted: rgba(30, 30, 36, .72); --faint: rgba(30, 30, 36, .62);
+    --accent: #007aff; --accent-soft: rgba(0, 122, 255, .14); --accent-ink: #0050a8; --link: #0062cc;
+    --primary-bg: #111114; --primary-ink: #ffffff; --primary-hover: #2a2a30;
+    --secondary-bg: rgba(255, 255, 255, .55); --secondary-ink: #111114; --secondary-border: rgba(255, 255, 255, .8); --secondary-hover: rgba(255, 255, 255, .8);
+    --live: #ff3b30; --positive: #1f9e44; --negative: #d70015;
+    --pill-neutral-bg: rgba(255, 255, 255, .6); --pill-neutral-ink: #111114; --pill-negative-ink: #b0000f;
+    --modal-bg: rgba(255, 255, 255, .62); --toast-bg: rgba(255, 255, 255, .7);
+    --tab-ink: rgba(30, 30, 36, .72); --brand-mark: #111114; --range: #111114;
+    --float-shadow: 0 30px 80px rgba(0, 0, 0, .18); --scrim: rgba(0, 0, 0, .12);
+    --avatar-bg-l: 60%; --kpi-rule: rgba(0, 0, 0, .08);
+    --ambient-filter: saturate(1.3) brightness(1.15);
+    --solid: #f4f4f7; --solid-2: #ffffff; --solid-field: #ffffff;
+  }
+}
+
+/* O ambiente. Lite: 16x9 pixels esticados (a interpolação bilinear faz o desfoque de graça). */
+[data-theme^="vidro"] .ambient {
+  display: block; position: fixed; inset: -6%; width: 112%; height: 112%; z-index: -1;
+  image-rendering: auto; filter: var(--ambient-filter);
+}
+/* Completo: canvas maior, já desfocado no próprio canvas (blur no CSS refaria a tela inteira a cada quadro) */
+[data-theme="vidro"] { --ambient-filter: saturate(1.6) brightness(.55); }
+@media (prefers-color-scheme: light) { [data-theme="vidro"] { --ambient-filter: saturate(1.4) brightness(1.15); } }
+[data-theme="vidro"] .ambient { inset: -10%; width: 120%; height: 120%; transform: translateZ(0); }
+
+/* Os planos de vidro */
+[data-theme^="vidro"] .sidebar,
+[data-theme^="vidro"] .panel,
+[data-theme^="vidro"] .card,
+[data-theme^="vidro"] .modalBox,
+[data-theme^="vidro"] .toast,
+[data-theme^="vidro"] .account,
+[data-theme^="vidro"] .pill,
+[data-theme^="vidro"] .btn:not(.primary):not(.danger),
+[data-theme^="vidro"] input:not([type=checkbox]):not([type=range]),
+[data-theme^="vidro"] select {
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-shine);
+}
+/* Barra lateral, topo e conteúdo flutuam como folhas separadas, com 12px de respiro da janela */
+[data-theme^="vidro"] .shell { padding: 12px; gap: 12px; }
+[data-theme^="vidro"] .sidebar, [data-theme^="vidro"] .panel {
+  border-radius: var(--radius-card); background: var(--glass); border: 1px solid var(--glass-edge);
+}
+[data-theme^="vidro"] .topbar { padding: 0 2px; }
+[data-theme^="vidro"] .updateBar { border-radius: 16px; }
+[data-theme^="vidro"] .view.screen { padding: 14px 4px 20px; }
+[data-theme^="vidro"] #host, [data-theme^="vidro"] #watch { gap: 12px; padding-top: 2px; }
+[data-theme^="vidro"] .stage { padding: 0; }
+[data-theme^="vidro"] .modalBox, [data-theme^="vidro"] .toast { border-color: var(--glass-edge); }
+[data-theme^="vidro"] .btn.primary { box-shadow: 0 8px 24px rgba(0, 0, 0, .25); }
+[data-theme^="vidro"] .btn { transition: background-color .15s, transform .25s cubic-bezier(.3, 1.6, .5, 1); }
+[data-theme^="vidro"] .btn:hover:not(:disabled) { transform: scale(1.04); }
+[data-theme^="vidro"] .btn:active:not(:disabled) { transform: scale(.95); }
+[data-theme^="vidro"] .viewTitle { font-weight: 700; }
+[data-theme^="vidro"] .kpis { background: rgba(255, 255, 255, .06); border: 1px solid var(--glass-edge); }
+
+/* Indicador da navegação: uma gota de vidro que desliza e "estica" no caminho (.moving vem do JS) */
+[data-theme^="vidro"] .navIndicator {
+  border-radius: 14px; background: var(--glass-strong); border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-shine);
+  transition: transform .45s cubic-bezier(.3, 1.35, .45, 1), height .45s cubic-bezier(.3, 1.35, .45, 1), scale .2s;
+}
+[data-theme^="vidro"] .navIndicator.moving { scale: .9 1.12; }
+
+/* Brilho especular: um reflexo suave que segue o ponteiro (--mx/--my vêm do JS) */
+[data-theme^="vidro"] .glassLit { position: relative; isolation: isolate; }
+[data-theme^="vidro"] .glassLit::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, -40%), rgba(255, 255, 255, .13), transparent 45%);
+  opacity: var(--lit, 0); transition: opacity .3s;
+}
+
+/* Só no completo: a lente. Os controles pequenos refratam o que passa por trás deles (o Chromium aplica o
+   filtro SVG #telinha-lens no backdrop-filter, desenhado na CPU). */
+[data-theme="vidro"] .navIndicator,
+[data-theme="vidro"] .btn:not(.primary):not(.danger),
+[data-theme="vidro"] .pill,
+[data-theme="vidro"] .account,
+[data-theme="vidro"] .liveTag {
+  -webkit-backdrop-filter: url(#telinha-lens) blur(10px) saturate(180%);
+  backdrop-filter: url(#telinha-lens) blur(10px) saturate(180%);
+}
+[data-theme="vidro"] .liveTag { background: rgba(0, 0, 0, .35); border: 1px solid rgba(255, 255, 255, .18); }
+
+/* Reduzir transparência (opção do app ou do sistema): vidro vira superfície sólida e legível */
+[data-theme^="vidro"][data-reduce-transparency="1"] {
+  --glass: var(--solid); --glass-strong: var(--solid-2); --surface: var(--solid); --field: var(--solid-field); --raised: var(--solid-field);
+  --modal-bg: var(--solid); --toast-bg: var(--solid); --secondary-bg: var(--solid-2);
+}
+[data-theme^="vidro"][data-reduce-transparency="1"] * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+[data-theme^="vidro"][data-reduce-transparency="1"] .ambient { opacity: .35; }
+@media (prefers-reduced-transparency: reduce) {
+  [data-theme^="vidro"] { --glass: var(--solid); --glass-strong: var(--solid-2); --surface: var(--solid); --modal-bg: var(--solid); --toast-bg: var(--solid); }
+  [data-theme^="vidro"] * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}
+
+/* Vidro: o layout se mexe com mola, a barra recolhida vira uma cápsula e o cartão arrastado é uma gota */
+[data-theme^="vidro"] {
+  --layout-dur: .62s;
+  --layout-ease: linear(0, 0.013 0.6%, 0.05 1.2%, 0.207 2.6%, 0.85 7.3%, 1.012 9.2%, 1.113 11.2%, 1.15 12.8%, 1.159 14.2%, 1.141 16.2%, 1.075 20%, 1.012 24.3%, 0.985 27.6%, 0.977 30.6%, 0.983 35.5%, 1.002 44.5%, 1.004 52.8%, 1);
+}
+[data-theme^="vidro"] .sidebar { transition: border-radius .45s var(--layout-ease); }
+[data-theme^="vidro"][data-nav="mini"] .sidebar { border-radius: 34px; }
+[data-theme^="vidro"] .view.panelMini .panel { margin-right: -12px; border-width: 0; }
+[data-theme^="vidro"] .panelOpen {
+  background: var(--glass-strong); border-color: var(--glass-edge);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-shine), 0 8px 24px rgba(0, 0, 0, .3);
+}
+[data-theme^="vidro"] .dock.dragging {
+  border-radius: calc(var(--radius-card) + 10px); border-color: rgba(255, 255, 255, .34); background: var(--glass-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -1px 0 rgba(255, 255, 255, .08), 0 30px 80px rgba(0, 0, 0, .5);
+  transition: border-radius .3s var(--layout-ease), width var(--layout-dur) var(--layout-ease);
+}
+/* O lugar onde a gota vai cair afunda no vidro, em vez de um tracejado */
+[data-theme^="vidro"] .dockGhost {
+  border: 1px solid var(--glass-edge); background: rgba(255, 255, 255, .035);
+  box-shadow: inset 0 2px 14px rgba(0, 0, 0, .35), inset 0 -1px 0 var(--glass-shine);
+  animation: ghostBreath 1.6s ease-in-out infinite;
+}
+@keyframes ghostBreath { 50% { background: rgba(255, 255, 255, .07); } }
+[data-theme^="vidro"].docking .dockZone:not(:has(> *))::before {
+  border: 1px solid var(--glass-edge); background: rgba(255, 255, 255, .04);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: inset 0 2px 14px rgba(0, 0, 0, .3);
+}
+[data-theme^="vidro"] .dockZone.dropTarget::before { border-color: rgba(255, 255, 255, .45); background: rgba(255, 255, 255, .09); }
+
+/* A lista que abre de um select é nativa e não tem vidro: com o texto claro do tema por cima do fundo branco
+   padrão ela ficava ilegível. Opções num fundo sólido do próprio tema. */
+[data-theme^="vidro"] select option, [data-theme^="vidro"] select optgroup { background: var(--solid); color: var(--text); }
+
+
+/* ================================================================ Versões escuras dos temas claros
+   Configurações › Aparência (data-mode no <html>). Mesma estrutura e o mesmo tom de cada tema, com o tom
+   clareado para ler sobre o escuro; o que era branco fixo nos temas vira a superfície escura. */
+[data-theme="papel"][data-mode="dark"], [data-theme="moldura"][data-mode="dark"],
+[data-theme="pastel"][data-mode="dark"], [data-theme="editorial"][data-mode="dark"] {
+  color-scheme: dark;
+  --live: #ff5a5f; --live-soft: rgba(255, 90, 95, .18); --positive: #5cc37a; --negative: #ff6b6b;
+  --pill-negative-bg: #3a1618; --pill-negative-ink: #ffb3b0;
+  --float-shadow: 0 16px 40px rgba(0, 0, 0, .55); --scrim: rgba(0, 0, 0, .55);
+  --avatar-bg-l: 30%; --avatar-ink-l: 90%;
+}
+[data-theme="papel"][data-mode="dark"] {
+  --ground: #0f0f0f; --chrome: #0f0f0f; --panel-bg: #0f0f0f;
+  --surface: #171717; --surface-border: #262626; --raised: #1f1f1f;
+  --field: #141414; --field-border: #333333; --control-hover: #555555; --rule: #222222;
+  --text: #ededed; --muted: #a3a3a3; --faint: #8f8f8f;
+  --accent: #5b9bf5; --accent-soft: #172538; --accent-ink: #a9c8f7; --accent-on: #0a0a0a;
+  --primary-bg: #ededed; --primary-ink: #0a0a0a; --primary-hover: #cfcfcf;
+  --secondary-bg: #262626; --secondary-ink: #ededed; --secondary-hover: #303030;
+  --pill-neutral-bg: #222222; --pill-neutral-ink: #d0d0d0;
+  --tab-ink: #a3a3a3; --brand-mark: #ededed; --range: #ededed;
+}
+[data-theme="papel"][data-mode="dark"] .card { border-color: #262626; }
+[data-theme="papel"][data-mode="dark"] .navIndicator { background: #222222; }
+
+[data-theme="moldura"][data-mode="dark"] {
+  --ground: #15181b; --chrome: #15181b; --panel-bg: #15181b; --stage-bg: #1c2024;
+  --surface: #1c2024; --surface-border: #2a2f34; --raised: #22272c;
+  --field: #181c20; --field-border: #343a40; --control-hover: #59616a; --rule: #262b30;
+  --text: #e8eaec; --muted: #a3a8ad; --faint: #8d9399;
+  --accent: #4fb3c9; --accent-soft: #15343c; --accent-ink: #9ad9e6; --accent-on: #0b1d22;
+  --primary-bg: #e8eaec; --primary-ink: #131416; --primary-hover: #c9ccd0;
+  --secondary-bg: #1c2024; --secondary-ink: #e8eaec; --secondary-border: #343a40; --secondary-hover: #262b30;
+  --pill-neutral-bg: #262b30; --pill-neutral-ink: #c9ccd0;
+  --tab-ink: #a3a8ad; --brand-mark: #4fb3c9; --range: #4fb3c9;
+}
+[data-theme="moldura"][data-mode="dark"] .views { background: #1c2024; border-color: #2a2f34; }
+[data-theme="moldura"][data-mode="dark"] .panel { background: #1c2024; border-right-color: #262b30; }
+[data-theme="moldura"][data-mode="dark"] .card { border-color: #2a2f34; }
+[data-theme="moldura"][data-mode="dark"] .navIndicator,
+[data-theme="moldura"][data-mode="dark"] .sideFoot .navItem.active { background: #262b30; }
+
+[data-theme="pastel"][data-mode="dark"] {
+  --ground: #12151a; --chrome: #12151a; --panel-bg: #12151a;
+  --surface: #1a1f26; --raised: #1d2a38;
+  --field: #161b21; --field-border: #2e3640; --control-hover: #4f5965; --rule: #222932;
+  --text: #e9edf2; --muted: #a6adb6; --faint: #8f97a1;
+  --accent: #6aa6ff; --accent-soft: #1a2f4d; --accent-ink: #b9d6ff; --accent-on: #0a1a33;
+  --primary-bg: #3b7cf0; --primary-ink: #ffffff; --primary-hover: #5a92f5;
+  --secondary-bg: #1a1f26; --secondary-ink: #e9edf2; --secondary-border: #2e3640; --secondary-hover: #222a35;
+  --pill-neutral-bg: #222932; --pill-neutral-ink: #c6ccd3;
+  --tab-ink: #a6adb6; --tab-active-ink: #b9d6ff; --brand-mark: #6aa6ff; --range: #6aa6ff;
+  --row-bg: #1a1f26; --kpi-rule: #243142;
+}
+[data-theme="pastel"][data-mode="dark"] .navIndicator, [data-theme="pastel"][data-mode="dark"] .friendRequests { background: #1a2f4d; }
+/* Os ladrilhos coloridos do Início: o mesmo tom, escuro, com a tinta clara */
+[data-theme="pastel"][data-mode="dark"] #home .card[aria-labelledby="liveTitle"] { --tile-bg: #142b45; --tile-ink: #b9d6ff; }
+[data-theme="pastel"][data-mode="dark"] #home .card[aria-labelledby="homeReqTitle"] { --tile-bg: #3a2416; --tile-ink: #ffcfae; }
+[data-theme="pastel"][data-mode="dark"] #home .card[aria-labelledby="mineTitle"] { --tile-bg: #15301f; --tile-ink: #aee8c2; }
+[data-theme="pastel"][data-mode="dark"] #home .card[aria-labelledby="othersTitle"] { --tile-bg: #351a25; --tile-ink: #f6b8cd; }
+[data-theme="pastel"][data-mode="dark"] .tile .frame { border-color: #1a1f26; }
+[data-theme="pastel"][data-mode="dark"] #home .btn:not(.primary):not(.danger) { background: rgba(0, 0, 0, .3); }
+
+[data-theme="editorial"][data-mode="dark"] {
+  --ground: #141412; --chrome: #141412; --panel-bg: #141412;
+  --surface: #1d1d1a; --raised: #252521;
+  --field: #181816; --field-border: #36362f; --control-hover: #5a5a52; --rule: #2a2a26;
+  --text: #ecebe6; --muted: #a8a7a0; --faint: #93928b;
+  --accent: #4fb8ac; --accent-soft: #15302c; --accent-ink: #9edcd3; --accent-on: #0b1f1c;
+  --primary-bg: #ecebe6; --primary-ink: #1f201d; --primary-hover: #d0cfc9;
+  --secondary-bg: #1d1d1a; --secondary-ink: #ecebe6; --secondary-border: #36362f; --secondary-hover: #252521;
+  --pill-neutral-bg: #252521; --pill-neutral-ink: #d0cfc9;
+  --tab-ink: #a8a7a0; --brand-mark: #4fb8ac; --range: #ecebe6;
+  --row-bg: #1d1d1a;
+}
+[data-theme="editorial"][data-mode="dark"] .navIndicator { background: #252521; }
+.modeRow { margin-top: 14px; max-width: 320px; }

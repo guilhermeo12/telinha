@@ -1,0 +1,175 @@
+/* Telinha · a forma de cada tema. themes.css dá cor, fonte e raio; este arquivo dá a estrutura e a ideia
+   própria de cada um, tirada do mundo da TV. O que mexe no layout vale só a partir de 761px: no celular
+   todos os temas mantêm a barra de abas embaixo (web.css). */
+
+/* ================================================================ Estúdio (terminal) · sala de controle
+   Trilho de ícones; o "Ao vivo agora" é uma parede de monitores: cantos retos, a luz vermelha de "no ar"
+   em cima de cada monitor e a etiqueta embaixo da imagem (nome, resolução, codec, ping), como nos
+   monitores de um estúdio. Quando você está no ar, uma faixa vermelha corre no topo da janela. */
+[data-theme="terminal"] { --nav-icons: block; --tally: #e5484d; --mono-figures: "Public Sans"; }
+@media (min-width: 761px) {
+  [data-theme="terminal"] { --sidebar-width: 68px; }
+  [data-theme="terminal"] .sidebar { padding: 14px 10px; align-items: center; gap: 18px; }
+  [data-theme="terminal"] .brand { font-size: 0; gap: 0; padding: 6px; }
+  [data-theme="terminal"] .brand svg { width: 24px; height: 24px; }
+  [data-theme="terminal"] .nav, [data-theme="terminal"] .sideFoot { align-items: center; }
+  [data-theme="terminal"] .navItem { width: 46px; height: 44px; padding: 0; justify-content: center; }
+  [data-theme="terminal"] .navIcon { width: 20px; height: 20px; }
+  [data-theme="terminal"] .navLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  [data-theme="terminal"] .navItem .badge { position: absolute; top: 6px; right: 4px; width: 8px; min-width: 8px; height: 8px; padding: 0; font-size: 0; }
+  [data-theme="terminal"] .version { display: none; }
+}
+[data-theme="terminal"] .screens { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+[data-theme="terminal"] .tile { gap: 0; background: #0b0b0d; border: 1px solid #2a2a2e; border-radius: 3px; overflow: hidden; }
+[data-theme="terminal"] .tile .frame { border-radius: 0; border-top: 3px solid var(--tally); }
+[data-theme="terminal"] .tile .liveTag { border-radius: 2px; background: var(--tally); top: 8px; left: 8px; height: 22px; }
+[data-theme="terminal"] .tile .liveTag::before { background: #fff; }
+[data-theme="terminal"] .tile .screenRow { padding: 10px 12px 4px; }
+[data-theme="terminal"] .tile .avatar { width: 26px; height: 26px; font-size: 12px; }
+[data-theme="terminal"] .tile .tech { padding: 0 12px 12px 50px; color: #a0a2a8; }
+[data-theme="terminal"] .tile .tech b { color: #fff; }
+[data-theme="terminal"] .isLive .topbar, .isLive[data-theme="terminal"] .topbar { box-shadow: inset 0 3px 0 var(--tally); }
+.isLive[data-theme="terminal"] #peerStatus { background: var(--tally); color: #fff; }
+.isLive[data-theme="terminal"] #peerStatus::before { background: #fff; }
+[data-theme="terminal"] .kpi .value { font-size: 22px; font-weight: 400; }
+[data-theme="terminal"] .cardHead h2 { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+/* ================================================================ Programação (papel) · guia de TV impresso
+   Quem está no ar vira uma grade de horários: à esquerda a hora em que entrou no ar, grande; no meio o
+   nome e o que está passando; à direita a miniatura. Papel claro, tinta, e um vermelho só para "no ar". */
+[data-theme="papel"] { --nav-icons: block; --ground: #f6f6f3; --chrome: #f6f6f3; --panel-bg: #f6f6f3; --fs-title: 34px; --fw-title: 700; --title-tracking: -0.03em; }
+[data-theme="papel"] .card { border-color: #e4e4df; }
+[data-theme="papel"] .screens { grid-template-columns: minmax(0, 1fr); gap: 0; }
+[data-theme="papel"] .tile {
+  display: grid; grid-template-columns: 96px minmax(0, 1fr) 208px; grid-template-areas: "slot row frame" "slot tech frame";
+  column-gap: 22px; row-gap: 4px; align-items: center; padding: 16px 0; border-top: 1px solid #e4e4df;
+}
+[data-theme="papel"] .tile:first-child { border-top: 0; padding-top: 2px; }
+[data-theme="papel"] .tile .slot { display: flex; grid-area: slot; }
+[data-theme="papel"] .tile .frame { grid-area: frame; border-radius: 3px; }
+[data-theme="papel"] .tile .liveTag { display: none; }
+[data-theme="papel"] .tile .screenRow { grid-area: row; align-self: end; }
+[data-theme="papel"] .tile .avatar { display: none; }
+[data-theme="papel"] .tile .screenName { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+[data-theme="papel"] .tile .tech { grid-area: tech; align-self: start; }
+[data-theme="papel"] .tile .tech b { color: var(--live); }
+[data-theme="papel"] .slot { flex-direction: column; gap: 2px; }
+[data-theme="papel"] .slot .slotTime { font-size: 30px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+[data-theme="papel"] .slot .slotOn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--live); }
+[data-theme="papel"] .slot .slotOn::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--live); }
+.slot { display: none; }
+
+/* ================================================================ Moldura · abas no topo, folha recortada
+   A navegação sai da lateral e vira abas com sublinhado; o conteúdo é uma folha branca recortada
+   (cantos de 16px, borda de 1px) dentro de um L tingido. */
+@media (min-width: 761px) {
+  [data-theme="moldura"] .shell {
+    grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-areas: "side" "top" "update" "main";
+  }
+  [data-theme="moldura"] .sidebar { flex-direction: row; align-items: center; gap: 26px; padding: 0 24px; height: 54px; border-right: 0; }
+  [data-theme="moldura"] .brand { padding: 0; }
+  [data-theme="moldura"] .nav { flex-direction: row; align-self: stretch; align-items: stretch; gap: 2px; }
+  [data-theme="moldura"] .navItem { width: auto; height: auto; padding: 0 14px; border-radius: 0; }
+  [data-theme="moldura"] .sideFoot { flex-direction: row; align-items: center; margin: 0 0 0 auto; }
+  [data-theme="moldura"] .sideFoot .navItem { height: 36px; border-radius: 6px; }
+  [data-theme="moldura"] .sideFoot .navItem.active { background: #e3e6e9; }
+  [data-theme="moldura"] .version { display: none; }
+  [data-theme="moldura"] .navIndicator { top: auto !important; bottom: 0; height: 2px !important; background: var(--accent) !important; border-radius: 2px !important; }
+  [data-theme="moldura"] .topbar { height: 50px; }
+  [data-theme="moldura"] .views { margin: 0 8px 8px; }
+}
+
+/* ================================================================ Pastel · mosaico de ladrilhos
+   Cada seção do Início é um ladrilho da sua cor clara, com a tinta escura do mesmo tom: céu para quem
+   está ao vivo, pêssego para os pedidos, menta para a sua transmissão, rosa para os amigos. */
+[data-theme="pastel"] { --radius-card: 26px; --fs-title: 32px; --fw-title: 800; --title-tracking: -0.03em; }
+[data-theme="pastel"] #home .card { border: 0; padding: 22px 24px; }
+[data-theme="pastel"] #home .card[aria-labelledby="liveTitle"] { --tile-bg: #dcefff; --tile-ink: #0a3a80; }
+[data-theme="pastel"] #home .card[aria-labelledby="homeReqTitle"] { --tile-bg: #ffe9da; --tile-ink: #7a3511; }
+[data-theme="pastel"] #home .card[aria-labelledby="mineTitle"] { --tile-bg: #dcf6e5; --tile-ink: #0d4a24; }
+[data-theme="pastel"] #home .card[aria-labelledby="othersTitle"] { --tile-bg: #fde5ee; --tile-ink: #7a1d3c; }
+[data-theme="pastel"] #home .card[aria-labelledby] {
+  background: var(--tile-bg); color: var(--tile-ink);
+  --text: var(--tile-ink); --muted: color-mix(in srgb, var(--tile-ink) 78%, transparent); --faint: color-mix(in srgb, var(--tile-ink) 68%, transparent);
+  --rule: color-mix(in srgb, var(--tile-ink) 12%, transparent); --raised: rgba(255, 255, 255, .6); --kpi-rule: color-mix(in srgb, var(--tile-ink) 14%, transparent);
+  --link: var(--tile-ink); --accent: var(--tile-ink);
+}
+[data-theme="pastel"] #home .cardHead h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+[data-theme="pastel"] .tile .frame { border-radius: 18px; border: 4px solid #fff; }
+[data-theme="pastel"] .tile .screenName { font-size: 17px; font-weight: 800; }
+[data-theme="pastel"] .avatar { width: 42px; height: 42px; font-size: 16px; font-weight: 800; }
+[data-theme="pastel"] #home .btn:not(.primary):not(.danger) { background: rgba(255, 255, 255, .75); border-color: transparent; }
+
+/* ================================================================ Revista (editorial) · capa de revista
+   Sem barra lateral: o nome em serifa no alto, centralizado, e a navegação embaixo, como um cabeçalho
+   de revista; o título vira saudação; o primeiro amigo ao vivo é a capa, com o nome em serifa por cima. */
+@media (min-width: 761px) {
+  [data-theme="editorial"] .shell {
+    grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-areas: "side" "top" "update" "main";
+  }
+  [data-theme="editorial"] .sidebar { position: relative; flex-direction: column; align-items: center; gap: 8px; padding: 18px 24px 4px; border-right: 0; }
+  [data-theme="editorial"] .brand { font-family: var(--title-font); font-size: 44px; font-weight: 400; letter-spacing: -0.01em; padding: 0; line-height: 1; }
+  [data-theme="editorial"] .brand svg { display: none; }
+  [data-theme="editorial"] .nav { flex-direction: row; gap: 2px; }
+  [data-theme="editorial"] .navItem { width: auto; height: 34px; padding: 0 14px; }
+  [data-theme="editorial"] .sideFoot { position: absolute; top: 24px; right: 24px; margin: 0; flex-direction: row; }
+  [data-theme="editorial"] .version { display: none; }
+  [data-theme="editorial"] .navIndicator { top: auto !important; bottom: 2px; height: 1.5px !important; background: var(--text) !important; border-radius: 0 !important; }
+  [data-theme="editorial"] .topbar { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  [data-theme="editorial"] .view.screen > * { width: 100%; max-width: 1120px; margin-left: auto; margin-right: auto; }
+  [data-theme="editorial"] #homeTitle { font-size: 54px; line-height: 1.05; }
+}
+[data-theme="editorial"] #homeLive { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+[data-theme="editorial"] #homeLive .tile:first-child {
+  grid-column: 1 / -1; display: grid; grid-template-areas: "cover"; position: relative;
+}
+[data-theme="editorial"] #homeLive .tile:first-child > * { grid-area: cover; }
+[data-theme="editorial"] #homeLive .tile:first-child .frame { aspect-ratio: 21 / 9; border-radius: 18px; }
+[data-theme="editorial"] #homeLive .tile:first-child .screenRow {
+  align-self: end; z-index: 1; padding: 90px 28px 24px; border-radius: 0 0 18px 18px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, .72)); color: #fff; pointer-events: none;
+}
+[data-theme="editorial"] #homeLive .tile:first-child .screenRow .btn { pointer-events: auto; background: #fff; color: #1f201d; border-color: transparent; }
+[data-theme="editorial"] #homeLive .tile:first-child .avatar { display: none; }
+[data-theme="editorial"] #homeLive .tile:first-child .screenName { font-family: var(--title-font); font-size: 52px; font-weight: 400; line-height: 1; color: #fff; }
+[data-theme="editorial"] #homeLive .tile:first-child .screenSub { color: rgba(255, 255, 255, .86); font-size: 14px; margin-top: 6px; }
+[data-theme="editorial"] #homeLive .tile:first-child .tech {
+  align-self: start; justify-self: end; z-index: 1; margin: 12px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(0, 0, 0, .55); color: #fff;
+}
+[data-theme="editorial"] #homeLive .tile:first-child .tech b { color: #fff; }
+[data-theme="editorial"] #homeLive .tile:first-child .liveTag { z-index: 1; }
+
+/* ================================================================ miniaturas no seletor: a forma de cada tema */
+.swatch[data-theme="terminal"] .mPanel { width: 12%; padding: 8px 0; align-items: center; }
+.swatch[data-theme="terminal"] .mPanel .mLine { width: 50%; }
+.swatch[data-theme="terminal"] .mPanel .mBtn { display: none; }
+.swatch[data-theme="terminal"] .mVideo { border-radius: 2px; border-top: 3px solid #e5484d; }
+.swatch[data-theme="terminal"] .mCard { border-radius: 2px; }
+
+.swatch[data-theme="papel"] .mStage { gap: 0; padding: 6px 10px; }
+.swatch[data-theme="papel"] .mVideo { flex: none; height: 30px; width: 34%; align-self: flex-end; border-radius: 2px; margin-bottom: 6px; }
+.swatch[data-theme="papel"] .mVideo::before { content: ""; position: absolute; left: -150%; top: 4px; width: 60%; height: 10px; border-radius: 2px; background: #0a0a0a; }
+.swatch[data-theme="papel"] .mCard { background: transparent; border: 0; border-top: 1px solid #ddddd6; border-radius: 0; padding: 6px 0; }
+
+.swatch[data-theme="moldura"] .mPanel { display: none; }
+.swatch[data-theme="moldura"] .mTop { gap: 10px; }
+.swatch[data-theme="moldura"] .mTab { height: 4px; border-radius: 0; }
+.swatch[data-theme="moldura"] .mTab:first-of-type { box-shadow: 0 5px 0 -1px #1b6c80; }
+.swatch[data-theme="moldura"] .mStage { margin: 0 6px 6px; background: #fff; border: 1px solid #e8eaec; border-radius: 8px; }
+
+.swatch[data-theme="pastel"] .mStage { gap: 6px; }
+.swatch[data-theme="pastel"] .mVideo { border: 3px solid #fff; border-radius: 12px; box-shadow: 0 0 0 6px #dcefff; margin: 6px; }
+.swatch[data-theme="pastel"] .mCard { background: #ffe9da; border: 0; border-radius: 12px; }
+.swatch[data-theme="pastel"] .mPanel { background: #dcf6e5; border: 0; border-radius: 12px; margin: 6px 0 6px 6px; }
+
+.swatch[data-theme="editorial"] .mTop { justify-content: center; height: 30px; border: 0; }
+.swatch[data-theme="editorial"] .mMark { display: none; }
+.swatch[data-theme="editorial"] .mTab:first-of-type { width: 46px; height: 10px; border-radius: 3px; }
+.swatch[data-theme="editorial"] .mTab.dim { display: none; }
+.swatch[data-theme="editorial"] .mBody { height: calc(100% - 30px); }
+.swatch[data-theme="editorial"] .mPanel { display: none; }
+.swatch[data-theme="editorial"] .mStage { padding: 2px 14% 8px; }
+.swatch[data-theme="editorial"] .mVideo { flex: 1.6; border-radius: 6px; }

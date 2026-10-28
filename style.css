@@ -1,0 +1,904 @@
+/* Telinha · estrutura e componentes. Tudo aqui lê tokens; as cores, fontes, raios e o "gesto" de cada
+   tema ficam em themes.css (um bloco [data-theme] por tema). */
+
+@font-face { font-family: "Inter"; src: url("fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Public Sans"; src: url("fonts/public-sans.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "IBM Plex Sans"; src: url("fonts/ibm-plex-sans.woff2") format("woff2"); font-weight: 100 700; font-display: swap; }
+@font-face { font-family: "Manrope"; src: url("fonts/manrope.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Instrument Sans"; src: url("fonts/instrument-sans.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Instrument Serif"; src: url("fonts/instrument-serif.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+
+/* Tokens derivados, iguais em todos os temas (os gráficos de charts.js leem estes nomes) */
+:root {
+  --chart-1: var(--accent);
+  --chart-muted: var(--faint);
+  --grid: var(--rule);
+  --axis-ink: var(--faint);
+  --ink: var(--text);
+  --sidebar-width: 224px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--ground);
+  color: var(--text);
+  font: var(--fw-body, 400) var(--fs-body)/1.45 var(--font);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+::selection { background: var(--accent-soft); color: var(--text); }
+
+.muted { color: var(--muted); }
+.small { font-size: var(--fs-small); line-height: 1.4; margin: 0; }
+.meta { color: var(--faint); font-size: var(--fs-small); line-height: 1.4; }
+.hidden { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.row { display: flex; gap: 8px; align-items: center; }
+.row.between { justify-content: space-between; }
+.row.end { justify-content: flex-end; }
+.svgDefs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* ---------------------------------------------------------------- moldura do app */
+.shell {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas: "side top" "side update" "side main";
+}
+
+.sidebar {
+  grid-area: side; min-height: 0;
+  display: flex; flex-direction: column; gap: 22px; padding: 18px 12px;
+  background: var(--chrome); border-right: 1px solid var(--chrome-rule);
+}
+.brand { display: flex; align-items: center; gap: 10px; white-space: nowrap; font-weight: 600; font-size: 16px; letter-spacing: -0.01em; padding: 4px 10px; }
+.brand svg { width: 22px; height: 22px; flex: none; color: var(--brand-mark, var(--accent)); }
+
+.nav { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.navItem {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+  height: 36px; padding: 0 12px; border: 0; border-radius: var(--radius-nav, 10px); cursor: pointer;
+  background: none; color: var(--tab-ink, var(--muted)); font-weight: 500; text-align: left;
+  transition: color .15s;
+}
+.navItem:hover { color: var(--text); }
+.navItem.active { color: var(--tab-active-ink, var(--text)); }
+/* Um indicador só, que desliza até o item ativo; cada tema dá a forma (pílula, linha, nada) */
+.navIndicator {
+  position: absolute; left: 0; top: 0; z-index: 0; width: 100%; pointer-events: none;
+  transition: transform .32s cubic-bezier(.3, .8, .2, 1), height .32s cubic-bezier(.3, .8, .2, 1);
+}
+.sideFoot { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+.version { color: var(--faint); font-size: 12px; padding: 0 12px; }
+
+.topbar {
+  grid-area: top; position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 14px;
+  height: var(--topbar-height, 60px); padding: 0 var(--gutter);
+  background: var(--chrome); border-bottom: 1px solid var(--chrome-rule);
+}
+.addFriend { display: flex; gap: 8px; flex: 1; min-width: 0; max-width: 560px; }
+.addFriend input { border-radius: var(--radius-control); }
+.pill {
+  margin-left: auto; font-size: var(--fs-small); font-weight: 500; height: 28px; padding: 0 12px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  background: var(--pill-neutral-bg); color: var(--pill-neutral-ink); white-space: nowrap;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+.pill.ok::before { background: var(--positive); }
+.pill.bad { background: var(--pill-negative-bg); color: var(--pill-negative-ink); }
+.pill.bad::before { background: var(--negative); }
+.account {
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center; flex: none;
+  height: 44px; padding: 0 14px; cursor: pointer; text-align: left;
+  background: var(--field); border: 1px solid var(--field-border); border-radius: var(--radius-control);
+}
+.account:hover { border-color: var(--control-hover); }
+.accName { font-weight: 600; font-size: var(--fs-small); line-height: 1.25; }
+.accCode { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; letter-spacing: .02em; line-height: 1.25; }
+
+.badge {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+  background: var(--live); color: #ffffff; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+
+.updateBar {
+  grid-area: update;
+  display: flex; align-items: center; justify-content: center; gap: 12px; padding: 8px 12px;
+  background: var(--accent-soft); color: var(--accent-ink); font-size: var(--fs-small);
+}
+
+.views { grid-area: main; min-height: 0; display: flex; }
+.view { display: none; flex: 1; min-height: 0; min-width: 0; }
+.view.active { display: flex; }
+/* Telas de leitura (Início, Amigos, Pedidos, Diagnóstico, Configurações) rolam inteiras */
+.view.screen { flex-direction: column; overflow-y: auto; padding: 26px var(--gutter) 32px; gap: var(--gap); }
+.view.screen.active { display: flex; }
+
+.titleRow { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 4px; }
+.viewTitle {
+  font-family: var(--title-font, var(--font)); font-size: var(--fs-title); font-weight: var(--fw-title, 600);
+  letter-spacing: var(--title-tracking, -0.02em); line-height: 1.15; margin: 0;
+}
+.finding { margin: 6px 0 0; color: var(--muted); font-size: 15px; max-width: 900px; }
+.stamp { color: var(--faint); font-size: 12px; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- botões e campos */
+.btn {
+  height: var(--control-height); padding: 0 16px; border-radius: var(--radius-control); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-weight: 500; white-space: nowrap; flex: none;
+  background: var(--secondary-bg); color: var(--secondary-ink); border: 1px solid var(--secondary-border);
+  transition: background-color .15s, border-color .15s, color .15s, transform .12s;
+}
+.btn:hover { background: var(--secondary-hover); }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; cursor: default; transform: none; }
+.btn.primary { background: var(--primary-bg); color: var(--primary-ink); border-color: transparent; }
+.btn.primary:hover { background: var(--primary-hover); }
+.btn.danger { background: transparent; border-color: var(--negative); color: var(--negative); }
+.btn.danger:hover { background: var(--pill-negative-bg); }
+.btn.wide { width: 100%; }
+.textLink { background: none; border: 0; padding: 0; cursor: pointer; color: var(--link, var(--accent)); font-size: var(--fs-small); font-weight: 500; }
+.textLink:hover { text-decoration: underline; }
+
+label { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-small); font-weight: 500; }
+label.check { flex-direction: row; align-items: center; gap: 9px; cursor: pointer; font-size: var(--fs-body); font-weight: 400; }
+.value { float: right; color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+input, select {
+  background: var(--field); color: var(--text); border: 1px solid var(--field-border);
+  border-radius: var(--radius-field, var(--radius-control)); height: var(--control-height); padding: 0 12px; width: 100%; min-width: 0;
+}
+select { padding-right: 8px; }
+input::placeholder { color: var(--faint); }
+input:hover, select:hover { border-color: var(--control-hover); }
+input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+input[type=range] { height: 18px; padding: 0; border: 0; background: none; accent-color: var(--range, var(--accent)); }
+
+/* ---------------------------------------------------------------- Transmitir e Assistir (painel + palco) */
+.panel {
+  width: 300px; flex-shrink: 0; overflow-y: auto;
+  padding: var(--pad); background: var(--panel-bg, var(--chrome)); border-right: 1px solid var(--chrome-rule);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.panel .viewTitle { margin-bottom: 6px; }
+.panel h2 { font-size: var(--fs-small); font-weight: 600; color: var(--muted); margin: 14px 0 0; }
+.panel h2:first-of-type { margin-top: 2px; }
+.stage {
+  flex: 1; min-width: 0; padding: var(--gutter); display: flex; flex-direction: column; gap: var(--gap); overflow-y: auto;
+  background: var(--stage-bg, transparent);
+}
+.watchWho { display: flex; flex-direction: column; gap: 12px; }
+.watchRow { display: flex; align-items: center; gap: 12px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-card);
+  box-shadow: var(--surface-shadow, none); padding: 18px 20px; min-width: 0;
+}
+.card h3 { margin: 0; font-size: var(--fs-body); font-weight: 600; }
+.cardHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; min-height: 28px; }
+.cardHead h2 { font-size: var(--fs-section); font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+.cardHead h2 .muted { font-weight: 400; }
+.subHead { font-size: var(--fs-small); color: var(--muted); font-weight: 600; margin: 20px 0 8px; }
+
+.liveBox { display: flex; align-items: center; gap: 14px; }
+.liveBox > div { flex: 1; min-width: 0; }
+.liveInvite { flex: none; }
+.discordGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.discordCol { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.discordCol > label:not(.check) { align-self: stretch; }
+.discordCol h3 { margin: 0; font-size: var(--fs-body); font-weight: 600; }
+.discordCol p { margin: 0; }
+.discordStatus { color: var(--muted); }
+.discordStatus.bad { color: var(--negative); }
+@media (max-width: 1000px) { .discordGrid { grid-template-columns: minmax(0, 1fr); } }
+.liveDot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--live); box-shadow: 0 0 0 4px var(--live-soft); }
+
+.videoWrap {
+  position: relative; flex: 1; min-height: 260px; background: #000;
+  border-radius: var(--radius-card); overflow: hidden; display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--video-shadow, none);
+}
+#watch .videoWrap { min-height: 0; }
+video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+.empty { position: absolute; color: #b4b4b4; padding: 24px; text-align: center; max-width: 440px; }
+.overlay {
+  position: absolute; top: 12px; left: 12px; margin: 0; padding: 9px 12px;
+  background: rgba(0, 0, 0, .72); color: #e6e6e6; border-radius: var(--radius-inner);
+  font: 12px/1.55 var(--font); font-variant-numeric: tabular-nums; pointer-events: none; white-space: pre-wrap;
+}
+.fsBtn { position: absolute; right: 12px; bottom: 12px; opacity: 0; transition: opacity .2s; background: rgba(0, 0, 0, .6); color: #fff; border-color: rgba(255, 255, 255, .2); }
+.videoWrap:hover .fsBtn { opacity: 1; }
+.videoWrap:fullscreen { border-radius: 0; }
+
+.viewers { display: flex; flex-direction: column; margin-top: 8px; }
+.viewer { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--rule); }
+.viewer:first-child { border-top: 0; }
+.viewer .name { font-weight: 600; }
+.viewer .stats { grid-column: 1 / -1; font-size: var(--fs-small); line-height: 1.5; color: var(--muted); font-variant-numeric: tabular-nums; white-space: pre-wrap; }
+
+/* ---------------------------------------------------------------- Início
+   Grade: duas colunas 2fr / 1fr com um vão só; as duas colunas terminam juntas (o último cartão de cada
+   coluna cresce até o fim, com o conteúdo no topo). */
+.homeGrid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: var(--gap); align-items: stretch; }
+.homeGrid .col { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
+.homeGrid .card.grow { flex: 1; }
+
+/* A assinatura: cada amigo ao vivo é uma telinha com o quadro atual da transmissão */
+.screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+/* .tile e não .screen: .screen já marca as telas do app (Início, Amigos...) e o display:flex vazava */
+.tile { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.frame {
+  position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius-inner); overflow: hidden;
+  background: #0e0f12; box-shadow: var(--frame-shadow, none); cursor: pointer;
+}
+.frame img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
+.tile:hover .frame img { transform: scale(1.035); }
+.noThumb { position: absolute; inset: 0; display: grid; place-items: center; color: #8d9099; font-size: 12px; text-align: center; padding: 12px; }
+.liveTag {
+  position: absolute; left: 10px; top: 10px; height: 24px; padding: 0 10px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+  background: rgba(0, 0, 0, .66); color: #ffffff; font-variant-numeric: tabular-nums;
+}
+.liveTag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #ff4d55; }
+.screenRow { display: flex; align-items: center; gap: 12px; }
+.screenRow .who { flex: 1; min-width: 0; }
+.screenName { font-weight: 600; }
+.screenSub { color: var(--faint); font-size: var(--fs-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.actSlot { flex: none; }
+.tech { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: var(--fs-small); font-variant-numeric: tabular-nums; min-height: 18px; }
+.tech b { color: var(--accent); font-weight: 600; }
+
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex: none; display: grid; place-items: center;
+  font-weight: 600; font-size: 14px;
+  background: hsl(var(--h) var(--avatar-sat, 32%) var(--avatar-bg-l, 24%)); color: hsl(var(--h) 70% var(--avatar-ink-l, 82%));
+}
+.people, .reqList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.people li, .reqRow { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 0; border-top: 1px solid var(--rule); }
+.people li:first-child, .reqRow:first-child { border-top: 0; }
+.people li.offline .avatar { opacity: .55; }
+.who { flex: 1; min-width: 0; }
+.who .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who .state { color: var(--faint); font-size: var(--fs-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.people .code { color: var(--faint); font-size: var(--fs-small); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.people .act { min-width: 90px; display: flex; justify-content: flex-end; }
+.tag { height: 22px; padding: 0 9px; border-radius: 999px; display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; background: var(--pill-neutral-bg); color: var(--pill-neutral-ink); white-space: nowrap; }
+.reqRow .actions { display: flex; gap: 8px; flex: none; }
+.reqRow .btn { height: 32px; padding: 0 14px; font-size: var(--fs-small); }
+.emptyLine { color: var(--faint); font-size: var(--fs-small); line-height: 1.5; padding: 6px 0; }
+
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); border-radius: var(--radius-inner); background: var(--raised); margin: 4px 0 18px; }
+.kpi { padding: 12px 14px; min-width: 0; }
+.kpi + .kpi { border-left: 1px solid var(--kpi-rule, var(--rule)); }
+.kpi .label { color: var(--muted); font-size: 12px; }
+.kpi .value { float: none; font-size: 24px; line-height: 30px; font-weight: var(--fw-kpi, 500); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kpi .unit { color: var(--muted); font-size: 13px; font-weight: 400; margin-left: 3px; }
+.chartHead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.chart { margin-bottom: 12px; min-height: 40px; }
+.mineMeta { margin: -6px 0 12px; }
+.mineViewers .figs { text-align: right; font-variant-numeric: tabular-nums; }
+.mineViewers .figs .sub { color: var(--faint); font-size: 12px; }
+
+/* ---------------------------------------------------------------- Amigos, Pedidos, Configurações */
+.friends { display: flex; flex-direction: column; }
+.friend, .request {
+  display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 12px;
+  min-height: 58px; padding: 8px 0; border-top: 1px solid var(--rule);
+}
+.friend:first-child, .request:first-child { border-top: 0; }
+.request { grid-template-columns: 1fr auto auto; }
+.friend.pending { opacity: .75; }
+.fname { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fstatus { font-size: var(--fs-small); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.friend .btn, .request .btn { height: 32px; padding: 0 14px; font-size: var(--fs-small); }
+.remove { background: none; border: 0; color: var(--faint); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 6px; }
+.remove:hover { color: var(--negative); }
+.fdot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--faint); opacity: .5; }
+.fdot.online { background: var(--positive); opacity: 1; }
+.fdot.live { background: var(--live); opacity: 1; box-shadow: 0 0 0 3px var(--live-soft); }
+
+.twoCol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap); align-items: start; }
+.narrowField { max-width: 360px; }
+.turnGrid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+
+/* ---------------------------------------------------------------- janelas */
+.modal {
+  position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+  background: var(--scrim, rgba(0, 0, 0, .55));
+}
+.modalBox {
+  width: min(1000px, 92vw); max-height: 86vh; overflow-y: auto;
+  background: var(--modal-bg, var(--surface)); border: 1px solid var(--surface-border); border-radius: var(--radius-modal, var(--radius-card));
+  padding: 20px; box-shadow: var(--float-shadow);
+}
+.modalBox h2 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.modalBox.narrow { width: min(440px, 92vw); display: flex; flex-direction: column; gap: 14px; }
+.modalBox.narrow p { margin: 0; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
+.source {
+  background: var(--raised); border: 2px solid transparent; border-radius: var(--radius-inner); padding: 8px;
+  cursor: pointer; text-align: left; color: var(--text); font: inherit; transition: border-color .15s;
+}
+.source:hover { border-color: var(--accent); }
+.source img { width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #000; border-radius: calc(var(--radius-inner) - 4px); display: block; }
+.source span { display: block; margin-top: 7px; font-size: var(--fs-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.source .tag { color: var(--muted); font-weight: 600; background: none; padding: 0; height: auto; }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20;
+  background: var(--toast-bg, var(--surface)); color: var(--text); border: 1px solid var(--surface-border);
+  padding: 11px 18px; border-radius: var(--radius-control); box-shadow: var(--float-shadow); max-width: 80vw;
+}
+.toast.bad { border-color: var(--negative); }
+
+.diagText {
+  margin: 0; padding: 4px 2px; font: 12px/1.65 Consolas, "Cascadia Mono", monospace; white-space: pre-wrap; user-select: text;
+}
+
+/* ---------------------------------------------------------------- escolha de tema */
+.themeGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.themeCard {
+  text-align: left; cursor: pointer; padding: 0; overflow: hidden; color: var(--text);
+  background: var(--raised); border: 2px solid transparent; border-radius: var(--radius-inner);
+  transition: border-color .15s, transform .15s;
+}
+.themeCard:hover { transform: translateY(-2px); }
+.themeCard[aria-pressed="true"] { border-color: var(--accent); }
+.themeCard .info { display: block; padding: 10px 12px 12px; }
+.themeCard .tname { display: block; font-weight: 600; }
+.themeCard .tdesc { display: block; font-size: var(--fs-small); color: var(--muted); margin-top: 2px; }
+.themeOptions { margin-top: 16px; display: flex; flex-direction: column; gap: 14px; }
+.ambientFpsField { max-width: 360px; }
+
+/* Miniatura de cada tema no seletor: usa os tokens do próprio tema (data-theme no elemento) */
+.swatch { display: block; position: relative; height: 128px; overflow: hidden; background: var(--ground); color: var(--text); font-size: 0; }
+.swatch .mAmbient { display: none; }
+.swatch .mTop { display: flex; align-items: center; gap: 6px; height: 22px; padding: 0 10px; background: var(--chrome); border-bottom: 1px solid var(--chrome-rule); }
+.swatch .mMark { width: 9px; height: 9px; border-radius: 3px; background: var(--brand-mark, var(--accent)); }
+.swatch .mTab { width: 30px; height: 6px; border-radius: 3px; background: var(--text); }
+.swatch .mTab.dim { background: var(--faint); opacity: .6; }
+.swatch .mBody { display: flex; height: calc(100% - 22px); }
+.swatch .mPanel { width: 34%; padding: 10px; display: flex; flex-direction: column; gap: 6px; background: var(--panel-bg, var(--chrome)); border-right: 1px solid var(--chrome-rule); }
+.swatch .mLine { display: block; height: 5px; border-radius: 3px; background: var(--muted); opacity: .55; }
+.swatch .mLine.short { width: 60%; }
+.swatch .mBtn { display: block; margin-top: auto; height: 14px; border-radius: var(--radius-control); background: var(--primary-bg); }
+.swatch .mStage { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 6px; background: var(--stage-bg, transparent); }
+.swatch .mVideo { position: relative; flex: 1; border-radius: calc(var(--radius-card) / 2.5); background: #101418; }
+.swatch .mLive { position: absolute; left: 6px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--live); }
+.swatch .mCard { display: flex; flex-direction: column; gap: 5px; padding: 7px; border-radius: calc(var(--radius-card) / 2.5); background: var(--surface); border: 1px solid var(--surface-border); }
+.swatch[data-theme^="vidro"] .mAmbient {
+  display: block; position: absolute; inset: -20%;
+  background: radial-gradient(circle at 30% 40%, #e2742f, transparent 45%), radial-gradient(circle at 75% 70%, #1d8fd6, transparent 50%), #0b0d14;
+  filter: blur(14px) saturate(1.4);
+}
+.swatch[data-theme^="vidro"] .mTop, .swatch[data-theme^="vidro"] .mPanel, .swatch[data-theme^="vidro"] .mCard {
+  position: relative; background: var(--glass); border: 1px solid var(--glass-edge); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.swatch[data-theme^="vidro"] .mTop { margin: 5px 5px 0; border-radius: 8px; }
+.swatch[data-theme^="vidro"] .mBody { position: relative; padding: 5px; gap: 5px; }
+.swatch[data-theme^="vidro"] .mPanel { border-radius: 10px; }
+
+/* ambiente dos temas de vidro (o quadro da transmissão, desfocado); escondido nos outros temas */
+.ambient { display: none; }
+
+/* Barra de rolagem discreta que segue o tema (a nativa do Windows destoava em todos) */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 999px; border: 4px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--muted); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+@media (max-width: 1180px) {
+  .homeGrid, .twoCol { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+/* Legenda dos gráficos (charts.js), aqui porque o CSP não deixa o script injetar um <style> */
+:where(.chart-legend) { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; line-height: 16px; color: var(--muted); }
+:where(.chart-legend li) { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+:where(.chart-legend svg) { flex: none; overflow: visible; }
+
+
+/* ---------------------------------------------------------------- sala: chat, reações, apontar */
+.chatList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 120px; max-height: 260px; }
+.panel .chatList.grow { flex: 1; max-height: none; min-height: 140px; }
+.chatMsg { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: var(--radius-inner); background: var(--raised); }
+.chatMsg.mine { background: var(--accent-soft); }
+.chatHead { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-small); }
+.chatTime { color: var(--faint); font-variant-numeric: tabular-nums; }
+.chatText { overflow-wrap: anywhere; }
+.chatForm { display: flex; gap: 8px; margin-top: 10px; }
+.chatForm input { flex: 1; min-width: 0; }
+
+.reactLayer, .markLayer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.reaction {
+  position: absolute; left: var(--x, 50%); bottom: 8%; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  animation: rise 2.6s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+.rEmoji { font-size: 38px; line-height: 1; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .45)); }
+.rName { font-size: 11px; font-weight: 600; color: #fff; background: rgba(0, 0, 0, .6); padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+@keyframes rise {
+  0% { transform: translateY(0) scale(.6); opacity: 0; }
+  12% { transform: translateY(-20px) scale(1.1); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateY(-220px) scale(1); opacity: 0; }
+}
+@keyframes fadeOut { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .reaction { animation: fadeOut 2.6s forwards !important; }
+}
+.reactBar {
+  position: absolute; left: 12px; bottom: 12px; display: flex; gap: 6px; padding: 6px; border-radius: 999px;
+  background: rgba(0, 0, 0, .5); opacity: .35; transition: opacity .2s;
+}
+.videoWrap:hover .reactBar, .reactBar:focus-within { opacity: 1; }
+#watch:not(.watching) .reactBar { display: none; }
+.reactBtn {
+  width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer; font-size: 20px; line-height: 1;
+  background: rgba(255, 255, 255, .1); transition: transform .15s, background-color .15s;
+}
+.reactBtn:hover { background: rgba(255, 255, 255, .22); transform: scale(1.12); }
+.reactBtn:active { transform: scale(.92); }
+.videoWrap.pointing video { cursor: crosshair; }
+.markSvg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.markDot { fill: var(--c); stroke: #000; stroke-width: 2; animation: markFade 2.2s forwards; }
+.markLine { fill: none; stroke: var(--c); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; animation: markFade 4s forwards; }
+@keyframes markFade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+.phoneText { margin: 0 0 12px; color: var(--muted); max-width: 720px; }
+.phoneText b { color: var(--text); font-weight: 600; user-select: all; overflow-wrap: anywhere; }
+/* "Tocar som" quando o navegador bloqueia o áudio (também usado no app web) */
+.unmuteBtn {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2;
+  height: 48px; padding: 0 22px; border-radius: 999px; border: 0; cursor: pointer;
+  background: #ffffff; color: #000000; font: inherit; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+
+/* Ícones da navegação: escondidos por padrão; os temas que usam ícone (Estúdio, Programação) ligam */
+.navIcon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; display: var(--nav-icons, none); }
+.navLabel { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.navItem { justify-content: flex-start; }
+.navItem .badge { margin-left: auto; }
+
+/* Celular deitado assistindo (classe .immersive, do app.js): o vídeo cobre a tela */
+.immersive .sidebar, .immersive .topbar, .immersive #watch .panel, .immersive .updateBar { display: none !important; }
+.immersive .shell { padding: 0 !important; }
+.immersive #watch .stage { position: fixed; inset: 0; z-index: 30; padding: 0 !important; background: #000; }
+.immersive #watch .videoWrap { position: absolute; inset: 0; aspect-ratio: auto !important; border-radius: 0 !important; }
+
+/* Só no site do celular (o .btn não pode reexibir no desktop) */
+.webOnly { display: none !important; }
+
+/* ---------------------------------------------------------------- layout ajustável (layout.js)
+   Barra lateral que recolhe para um trilho de ícones, painel que recolhe para uma alça e cartões que se
+   arrastam entre o painel, embaixo do vídeo e a coluna à direita. Nos vidros as mudanças usam uma mola. */
+:root { --layout-ease: cubic-bezier(.2, .8, .2, 1); --layout-dur: .34s; }
+.stage { flex-direction: row; position: relative; overflow: hidden; }
+.stageMain { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: var(--gap); overflow-y: auto; position: relative; }
+.dockZone { display: flex; flex-direction: column; gap: var(--gap); }
+.dockZone:not(.side):not(:has(> *)) { display: contents; }
+.dockZone.side {
+  width: 340px; flex: none; margin-left: 0; overflow: hidden auto;
+  transition: width var(--layout-dur) var(--layout-ease), margin-left var(--layout-dur) var(--layout-ease);
+}
+.dockZone.side > * { min-width: 340px; }
+.dockZone.side:not(:has(> *)) { width: 0; margin-left: calc(-1 * var(--gap)); }
+.dockZone.side > .dock[data-dock="chat"] { flex: 1; display: flex; flex-direction: column; min-height: 280px; }
+.dockZone.side .chatList { flex: 1; max-height: none; }
+.panel .dockZone.grow:has(> *) { flex: 1; min-height: 0; }
+.panel .dock { padding: 14px 14px 12px; }
+.panel .dock[data-dock="chat"] { display: flex; flex-direction: column; flex: 1; min-height: 240px; }
+.panel .dock .cardHead { margin-bottom: 10px; }
+.panel .dock .chatList { flex: 1; }
+/* Nas colunas estreitas (painel e direita) o título fica sozinho na linha e a nota desce */
+:is(.panel, .dockZone.side) .dock :is(.cardHead, .row.between) { flex-wrap: wrap; row-gap: 2px; }
+:is(.panel, .dockZone.side) .dock :is(.cardHead .meta, #uploadEst) { flex-basis: 100%; }
+
+.layoutReset { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 18px; }
+.panelHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.iconBtn {
+  display: inline-grid; place-items: center; width: 30px; height: 30px; flex: none; padding: 0; cursor: pointer;
+  border: 0; border-radius: 999px; background: none; color: var(--muted); transition: background-color .15s, color .15s;
+}
+.iconBtn:hover { background: var(--raised); color: var(--text); }
+.iconBtn svg, .panelOpen svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.panelOpen { display: none; }
+
+@media (min-width: 761px) {
+  .dockHandle { cursor: grab; user-select: none; }
+  .docking, .docking * { cursor: grabbing !important; user-select: none; }
+
+  /* Barra lateral recolhida: os ícones ficam onde estavam, os nomes somem. Estúdio já é trilho; Moldura e
+     Revista usam abas no topo, então lá não tem o que recolher. */
+  .layoutAnim .shell { transition: grid-template-columns var(--layout-dur) var(--layout-ease); }
+  .brandName, .navLabel, .version { transition: opacity .18s; }
+  :root[data-nav="mini"]:not([data-theme="terminal"], [data-theme="moldura"], [data-theme="editorial"]) { --sidebar-width: 68px; --nav-icons: block; }
+  :root[data-nav="mini"]:not([data-theme="terminal"], [data-theme="moldura"], [data-theme="editorial"]) .sidebar { overflow: hidden; padding-left: 12px; padding-right: 12px; }
+  :root[data-nav="mini"]:not([data-theme="terminal"], [data-theme="moldura"], [data-theme="editorial"]) :is(.brandName, .navLabel, .version) { opacity: 0; pointer-events: none; }
+  :root[data-nav="mini"]:not([data-theme="terminal"], [data-theme="moldura"], [data-theme="editorial"]) .navItem { width: 44px; padding: 0 13px; white-space: nowrap; }
+  :root[data-nav="mini"]:not([data-theme="terminal"], [data-theme="moldura"], [data-theme="editorial"]) .navItem .badge { position: absolute; top: 5px; left: 26px; width: 8px; min-width: 8px; height: 8px; padding: 0; font-size: 0; }
+  /* A setinha fica no fim da linha do logo; recolhida, desliza para baixo do logo e vira para a direita */
+  .brand { position: relative; transition: margin-bottom var(--layout-dur) var(--layout-ease); }
+  .navToggle { position: absolute; top: 50%; left: calc(100% - 30px); margin-top: -15px; transition: left var(--layout-dur) var(--layout-ease), top var(--layout-dur) var(--layout-ease), background-color .15s, color .15s; }
+  .navToggle svg { transition: transform var(--layout-dur) var(--layout-ease); }
+  :root[data-nav="mini"]:not([data-theme="terminal"], [data-theme="moldura"], [data-theme="editorial"]) .brand { margin-bottom: 30px; }
+  :root[data-nav="mini"]:not([data-theme="terminal"], [data-theme="moldura"], [data-theme="editorial"]) .navToggle { left: 7px; top: calc(100% + 22px); }
+  :root[data-nav="mini"] .navToggle svg { transform: scaleX(-1); }
+  [data-theme="terminal"] .navToggle, [data-theme="moldura"] .navToggle, [data-theme="editorial"] .navToggle { display: none; }
+
+  /* Painel recolhido: some para a esquerda e deixa uma alça para voltar */
+  #host, #watch { position: relative; }
+  .panel > * { min-width: calc(300px - 2 * var(--pad) - 16px); }
+  .layoutAnim .panel { transition: width var(--layout-dur) var(--layout-ease), padding var(--layout-dur) var(--layout-ease), opacity .2s, margin var(--layout-dur) var(--layout-ease); }
+  .view.panelMini .panel { width: 0; padding-left: 0; padding-right: 0; opacity: 0; overflow: hidden; border-right-width: 0; pointer-events: none; }
+  .panelOpen {
+    display: grid; place-items: center; position: absolute; left: 6px; top: 50%; z-index: 6;
+    width: 22px; height: 72px; padding: 0; cursor: pointer; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--surface-border); color: var(--muted); box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+    opacity: 0; pointer-events: none; transform: translateY(-50%) scale(.5, .7);
+    transition: opacity .2s, transform var(--layout-dur) var(--layout-ease), width .25s var(--layout-ease);
+  }
+  .view.panelMini .panelOpen { opacity: 1; pointer-events: auto; transform: translateY(-50%); transition-delay: .12s, .12s, 0s; }
+  .panelOpen:hover { width: 28px; color: var(--text); }
+  .immersive .panelOpen { display: none; }
+
+  /* Arrastando: o cartão sobe, o lugar dele vira um fantasma e os lugares vazios mostram onde dá para soltar */
+  .dock.dragging { pointer-events: none; will-change: transform; overflow: hidden; transition: width var(--layout-dur) var(--layout-ease); box-shadow: 0 26px 70px rgba(0, 0, 0, .45); }
+  .dockGhost {
+    flex: none; border-radius: var(--radius-card); border: 1.5px dashed var(--control-hover);
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+  }
+  .docking .dockZone:not(:has(> *))::before {
+    content: "Soltar aqui"; position: absolute; display: grid; place-items: center; z-index: 4;
+    border-radius: var(--radius-card); border: 1.5px dashed var(--control-hover); color: var(--muted); font-size: var(--fs-small);
+    background: color-mix(in srgb, var(--accent) 6%, transparent); pointer-events: none;
+  }
+  .docking .dockZone.side:not(:has(> *))::before { top: var(--gutter); bottom: var(--gutter); right: var(--gutter); width: 120px; }
+  .docking .stageMain > .dockZone:not(:has(> *))::before { left: 0; right: 0; bottom: 0; height: 110px; }
+  /* No painel o lugar vazio entra no fim da lista (o painel rola), em vez de cobrir os controles */
+  .docking .panel > .dockZone:not(:has(> *)) { display: flex; position: relative; min-height: 110px; flex: none; }
+  .docking .panel > .dockZone:not(:has(> *))::before { inset: 0; }
+  .dockZone.dropTarget::before { border-color: var(--accent); color: var(--text); }
+}
+
+@media (max-width: 760px) {
+  .stage { flex-direction: column; overflow: visible; }
+  .stageMain { overflow: visible; }
+  .dockZone.side, .dockZone.side:not(:has(> *)) { width: auto; margin-left: 0; overflow: visible; }
+  .dockZone.side > * { min-width: 0; }
+  .panelToggle, .panelOpen, .navToggle { display: none !important; }
+}
+
+/* ---------------------------------------------------------------- câmera e voz (voice.js) */
+.voiceTiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.voiceTile {
+  position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius-inner);
+  background: var(--raised); outline: 2px solid transparent; outline-offset: -2px; transition: outline-color .12s;
+}
+.voiceTile.speaking { outline-color: var(--positive); }
+.voiceTile video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.voiceTile.me video { transform: scaleX(-1); }
+.voiceTile.camOff video { visibility: hidden; }
+.voiceAvatar {
+  position: absolute; inset: 0; margin: auto; width: 44%; max-width: 56px; aspect-ratio: 1; border-radius: 50%;
+  display: none; place-items: center; font-weight: 600; font-size: 20px; color: #0b0d10;
+  background: var(--who, var(--accent));
+}
+.voiceTile.camOff .voiceAvatar { display: grid; }
+.voiceName {
+  position: absolute; left: 6px; bottom: 6px; max-width: calc(100% - 12px); display: flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border-radius: 999px; background: rgba(0, 0, 0, .58); color: #fff; font-size: 12px; line-height: 18px;
+}
+.voiceName span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.voiceMicOff { display: none; }
+.voiceTile.micOff .voiceMicOff { display: inline-flex; }
+.voiceMicOff svg { width: 13px; height: 13px; fill: none; stroke: #ff8a8a; stroke-width: 2; stroke-linecap: round; }
+.voiceMute {
+  position: absolute; top: 6px; right: 6px; padding: 2px 8px; border: 0; border-radius: 999px; cursor: pointer;
+  background: rgba(0, 0, 0, .58); color: #fff; font-size: 12px; line-height: 18px; opacity: 0; transition: opacity .12s;
+}
+.voiceTile:hover .voiceMute, .voiceTile.silenced .voiceMute, .voiceMute:focus-visible { opacity: 1; }
+.voiceTile.silenced { opacity: .6; }
+.voiceBar { display: flex; gap: 8px; flex-wrap: wrap; }
+.voiceBar .btn { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding-inline: 12px; white-space: nowrap; }
+.voiceBar .btn span { overflow: hidden; text-overflow: ellipsis; }
+.voiceBar svg { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.voiceBar .btn.on { background: var(--primary-bg); color: var(--primary-ink); border-color: transparent; }
+.voiceBar .btn.on:hover { background: var(--primary-hover); }
+.panel .voiceCard { margin-top: 18px; }
+.deviceGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 10px; }
+@media (max-width: 760px) { .deviceGrid { grid-template-columns: 1fr; } }
+.reactBtn.voiceQuick { display: inline-grid; place-items: center; color: #fff; }
+.reactBar .voiceQuick[data-kind="mic"] { margin-left: 8px; }
+.voiceQuick svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.reactBtn.voiceQuick.on { background: var(--primary-bg); color: var(--primary-ink); }
+.liveBox .iconBtn.voiceQuick { width: 36px; height: 36px; border: 1px solid var(--secondary-border); }
+.liveBox .iconBtn.voiceQuick.on { background: var(--primary-bg); color: var(--primary-ink); border-color: transparent; }
+
+/* ---------------------------------------------------------------- ligação (Configurações) */
+.netModes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.netMode {
+  display: flex; gap: 10px; align-items: flex-start; padding: 14px; cursor: pointer;
+  border: 1px solid var(--rule); border-radius: var(--radius-inner); transition: border-color .15s, background-color .15s;
+}
+.netMode:hover { background: var(--raised); }
+.netMode:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.netMode input { margin-top: 3px; accent-color: var(--accent); flex: none; }
+.netModeBody { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.netTag { font-size: var(--fs-small); font-weight: 500; color: var(--accent); margin-left: 4px; }
+.netPros { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-small); line-height: 1.4; }
+.netPros li { position: relative; padding-left: 16px; }
+.netPros li::before { position: absolute; left: 0; font-weight: 700; }
+.netPros .pro::before { content: "+"; color: var(--positive); }
+.netPros .con::before { content: "−"; color: var(--negative); }
+.netNow { margin: 12px 0 0; color: var(--muted); }
+.netNow.bad { color: var(--negative); }
+.netCustom { margin-top: 12px; }
+.netCustom summary { cursor: pointer; }
+.netCustom .turnGrid { margin-top: 10px; }
+@media (max-width: 900px) { .netModes { grid-template-columns: 1fr; } }
+
+/* ---------------------------------------------------------------- desenhar na tela (draw.js) */
+.drawLayer { position: absolute; z-index: 3; pointer-events: none; }
+.drawLayer canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.drawLayer.on { pointer-events: auto; touch-action: none; cursor: none; outline: 1px dashed var(--accent); outline-offset: -1px; }
+.drawLayer.on.cross { cursor: crosshair; }
+.drawPanel {
+  position: absolute; z-index: 6; top: 12px; right: 12px; width: 232px; max-height: calc(100% - 24px); overflow: auto;
+  display: flex; flex-direction: column; gap: 9px; padding: 12px; border-radius: var(--radius-inner);
+  background: var(--surface); border: 1px solid var(--surface-border); box-shadow: var(--float-shadow, 0 8px 30px rgba(0, 0, 0, .35));
+  font-size: var(--fs-small); color: var(--text);
+}
+.dpHead { display: flex; align-items: center; justify-content: space-between; }
+.drawPanel button {
+  font: inherit; color: inherit; border: 1px solid var(--rule); background: var(--raised); border-radius: 8px; cursor: pointer;
+  padding: 5px 0; text-align: center; line-height: 1.2;
+}
+.drawPanel button:hover { border-color: var(--accent); }
+.drawPanel button.on { background: var(--primary-bg); color: var(--primary-ink); border-color: transparent; }
+.drawPanel button:disabled { opacity: .4; cursor: default; }
+.dpX { width: 28px; padding: 3px 0 !important; }
+.dpTools { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.dpTools button { font-size: 15px; }
+.dpColors { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.dpRecent { display: flex; gap: 5px; flex-wrap: wrap; }
+.dpRecent:empty { display: none; }
+.drawPanel .dpSw { aspect-ratio: 1; border-radius: 50%; padding: 0; border: 0; box-shadow: inset 0 0 0 1px rgba(127, 127, 127, .45); }
+.dpRecent .dpSw { width: 22px; }
+.drawPanel .dpSw.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.dpPick { position: relative; overflow: hidden; cursor: pointer; background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red); }
+.dpPick input { position: absolute; inset: -8px; width: 200%; height: 200%; opacity: 0; cursor: pointer; }
+.dpRange { display: grid; grid-template-columns: 64px 1fr 34px; align-items: center; gap: 6px; margin: 0; }
+.dpRange input { width: 100%; margin: 0; accent-color: var(--accent); }
+.dpRange b { text-align: right; font-variant-numeric: tabular-nums; }
+.dpCheck { margin: 0; }
+.dpActs { display: grid; grid-template-columns: 1fr 1fr 2fr 2fr; gap: 4px; }
+.dpAll.armed { background: var(--negative) !important; color: #fff !important; border-color: transparent !important; }
+.dpHint { margin: 0; color: var(--faint); }
+.drawQuick.on { background: var(--primary-bg); color: var(--primary-ink); }
+@media (max-width: 760px) { .drawPanel { top: auto; bottom: 8px; right: 8px; left: 8px; width: auto; max-height: 55%; } }
+
+
+/* ---------------------------------------------------------------- chat voando, figurinhas e emoji livre */
+.chatFlyOpt { margin: -6px 0 10px; font-size: var(--fs-small); color: var(--muted); }
+.chatFlyMsg {
+  position: absolute; left: 100%; white-space: nowrap; pointer-events: none; z-index: 4;
+  font: 600 20px/1.2 var(--font); color: #fff; text-shadow: 0 0 3px #000, 0 0 3px #000, 0 2px 4px #000;
+  animation: chatAcross var(--dur, 9s) linear forwards;
+}
+.chatFlyMsg b { color: #ffd60a; margin-right: 8px; }
+@keyframes chatAcross { to { transform: translateX(calc(-100vw - 100%)); } }
+.stickerFly {
+  position: absolute; bottom: 90px; left: var(--x, 50%); z-index: 4; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; pointer-events: none; animation: stickerUp 4.2s ease-out forwards;
+}
+.stickerFly img { width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .55)); }
+.stickerFly span { font-size: 12px; font-weight: 600; color: #fff; background: rgba(0, 0, 0, .55); padding: 2px 8px; border-radius: 999px; }
+@keyframes stickerUp {
+  0% { transform: translateY(20px) scale(.5); opacity: 0; } 10% { transform: translateY(0) scale(1.05); opacity: 1; }
+  85% { opacity: 1; } 100% { transform: translateY(-120px) scale(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .chatFlyMsg, .stickerFly { animation-duration: .01s; } }
+.chatSticker { display: block; max-width: 120px; max-height: 120px; object-fit: contain; margin-top: 4px; }
+.stickerBtn { padding: 0 10px; }
+.stickerPanel {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; padding: 10px; border-radius: var(--radius-inner);
+  background: var(--raised); border: 1px solid var(--rule);
+}
+.stTabs { display: flex; gap: 6px; }
+.stTabs button { font: inherit; font-size: var(--fs-small); color: inherit; background: none; border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.stTabs button.on { background: var(--primary-bg); color: var(--primary-ink); border-color: transparent; }
+.stTabs .stImport { margin-left: auto; }
+.stGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; max-height: 220px; overflow: auto; }
+.stItem { position: relative; aspect-ratio: 1; border: 0; border-radius: 8px; background: var(--surface); cursor: pointer; padding: 4px; }
+.stItem:hover { outline: 2px solid var(--accent); }
+.stItem img { width: 100%; height: 100%; object-fit: contain; }
+.stDel { position: absolute; top: 2px; right: 4px; font-size: 11px; opacity: 0; color: var(--negative); }
+.stItem:hover .stDel { opacity: 1; }
+.stEmpty { margin: 0; }
+.reactRecent { display: contents; }
+.reactPlus { font-weight: 700; font-size: 20px; color: #fff; }
+.emojiPick { display: flex; }
+.emojiPick input { width: 130px; height: 38px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(0, 0, 0, .55); color: #fff; padding: 0 12px; }
+.wrapRow { flex-wrap: wrap; margin-bottom: 10px; }
+
+/* volume de cada pessoa (no quadradinho) e medidor do seu microfone (Configurações) */
+.voiceVol {
+  position: absolute; top: 6px; right: 6px; display: flex; align-items: center; gap: 6px; padding: 2px 4px 2px 2px;
+  border-radius: 999px; background: rgba(0, 0, 0, .58); opacity: 0; transition: opacity .12s;
+}
+.voiceTile:hover .voiceVol, .voiceTile.silenced .voiceVol, .voiceVol:focus-within { opacity: 1; }
+.voiceVol .voiceMute { position: static; opacity: 1; background: none; padding: 2px 6px; }
+.voiceVol input[type=range] { width: 64px; margin: 0; accent-color: #fff; }
+.micMeter { display: block; height: 6px; margin-top: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+.micMeter i { display: block; height: 100%; width: 0; background: var(--positive); transition: width .08s linear; }
+.micMeter i.hot { background: var(--negative); }
+.micMeter.idle { opacity: .4; }
+
+/* câmera aumentada (por cima do vídeo principal; redimensiona pelo canto) */
+.voiceBig {
+  position: absolute; left: 6px; top: 6px; width: 26px; height: 26px; border: 0; border-radius: 999px; cursor: pointer;
+  background: rgba(0, 0, 0, .58); color: #fff; font-size: 14px; line-height: 26px; opacity: 0; transition: opacity .12s;
+}
+.voiceTile:hover .voiceBig, .voiceBig:focus-visible, .voiceTile.focused .voiceBig { opacity: 1; }
+.voiceTile.focused { outline-color: var(--accent); }
+.camStage {
+  position: absolute; z-index: 5; right: 16px; bottom: 16px; width: 31%; min-width: 220px; max-width: calc(100% - 32px);
+  aspect-ratio: 16 / 9; max-height: calc(100% - 32px); resize: both; overflow: hidden; border-radius: var(--radius-inner);
+  background: #000; box-shadow: 0 12px 40px rgba(0, 0, 0, .55);
+}
+.camStage video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.camStage video.mirror { transform: scaleX(-1); }
+.camStage.camOff video { visibility: hidden; }
+.camStageBar {
+  position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 6px 8px; background: linear-gradient(rgba(0, 0, 0, .6), transparent); color: #fff; font-size: 13px; font-weight: 600;
+}
+.camStageBar button { border: 0; background: rgba(0, 0, 0, .5); color: #fff; border-radius: 999px; width: 26px; height: 26px; cursor: pointer; }
+
+/* quem assiste e está apresentando: o vídeo dele não volta, então o aviso cobre o quadro */
+#watchWrap.presentingSelf::after {
+  content: 'Você está apresentando a sua tela para a sala'; position: absolute; inset: 0; z-index: 2; display: grid; place-items: center;
+  background: rgba(0, 0, 0, .78); color: #fff; font-size: 20px; font-weight: 600; text-align: center; padding: 24px;
+}
+
+.camStageBar { cursor: grab; touch-action: none; user-select: none; }
+.camStageBar:active { cursor: grabbing; }
+
+/* Transmitir › Avançado (placa e codificador) */
+.advanced { margin: 4px 0 6px; }
+.advanced summary { cursor: pointer; font-weight: 600; color: var(--muted); padding: 6px 0; }
+.advanced[open] summary { color: var(--text); }
+.advanced > label, .advanced > p, .advanced > .btn { margin-top: 10px; }
+/* "i" com explicação ao passar o mouse (ou focar pelo teclado) */
+.infoTip {
+  position: relative; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; vertical-align: 1px;
+  border: 1px solid var(--faint); border-radius: 50%; color: var(--muted); font: italic 600 11px/1 Georgia, serif; cursor: help;
+}
+.infoTip::after {
+  content: attr(data-tip); position: absolute; left: -100px; top: calc(100% + 8px); z-index: 20; /* alinhado ao painel: centrado, cortava na borda */
+  width: 240px; padding: 8px 10px; border-radius: 8px; background: var(--toast-bg, #111); color: var(--text); box-shadow: var(--float-shadow);
+  font: 400 12px/1.4 var(--font); text-align: left; white-space: normal; opacity: 0; pointer-events: none; transition: opacity .12s;
+}
+.infoTip:hover::after, .infoTip:focus-visible::after { opacity: 1; }
+
+/* Tela de toque: as reações e o botão de tela cheia aparecem ao tocar no vídeo e somem sozinhos (app.js) */
+@media (hover: none) {
+  #watchWrap .reactBar, #watchWrap .fsBtn { opacity: 0; pointer-events: none; transition: opacity .25s; }
+  #watchWrap.controls .reactBar, #watchWrap.controls .fsBtn, #watchWrap .reactBar:focus-within { opacity: 1; pointer-events: auto; }
+}
+
+/* Câmeras no palco (voice.js): ao lado do vídeo, embaixo dele ou numa coluna por cima do canto */
+.camDeck {
+  position: absolute; right: 0; bottom: 0; z-index: 4; display: grid; gap: 8px; padding: 12px;
+  align-content: center; justify-content: center; grid-auto-flow: dense; pointer-events: none;
+}
+.camDeck > .voiceTile { pointer-events: auto; box-shadow: 0 6px 24px rgba(0, 0, 0, .45); }
+.camDeck > .voiceTile.lead { grid-column: span 2; grid-row: span 2; }
+.videoWrap.hasDeck { justify-content: flex-start; align-items: flex-start; }
+.videoWrap.deckSide > video { height: 100%; }
+/* Reações e tela cheia ficam sobre o vídeo, não sobre as câmeras */
+.videoWrap.hasDeck:not(.talk) .reactBar { bottom: calc(var(--deckH, 0px) + 12px); }
+.videoWrap.hasDeck:not(.talk) .fsBtn { bottom: calc(var(--deckH, 0px) + 12px); right: calc(var(--deckW, 0px) + 12px); }
+.videoWrap.deckBelow > video { width: 100%; }
+/* Modo conversa: as câmeras ocupam o palco e a tela vira um quadro no canto (clique nele para voltar) */
+.videoWrap.talk .camDeck { inset: 0; width: auto !important; height: auto !important; }
+.videoWrap.talk > video {
+  position: absolute; right: 16px; bottom: 16px; z-index: 5; width: 24%; height: auto; aspect-ratio: 16 / 9;
+  border-radius: var(--radius-inner); box-shadow: 0 10px 34px rgba(0, 0, 0, .6); cursor: pointer;
+}
+.videoWrap.talk .reactLayer, .videoWrap.talk .markLayer { z-index: 6; }
+
+/* Transmitir pelo site (PC): aviso do que só o app faz */
+.webHostNote { display: none; }
+.web .webHostNote { display: block; margin: 0 0 12px; }
+
+/* Palco: câmera aberta numa janelinha ou sem vídeo sai da grade (continua na página: o som sai dela) */
+.camDeck > .voiceTile.offDeck { display: none; }
+/* Quem está sem câmera: etiqueta pequena (bolinha com a inicial e o nome); acende quando fala */
+.camChips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; pointer-events: auto; }
+.camChips:empty { display: none; }
+.camChip {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 3px; border-radius: 999px;
+  background: rgba(0, 0, 0, .62); color: #fff; font-size: 12px; outline: 2px solid transparent; outline-offset: -2px; transition: outline-color .12s;
+}
+.camChip .voiceAvatar { position: static; display: grid; width: 26px; height: 26px; margin: 0; font-size: 13px; }
+.camChip .chipName { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.camChip .chipMic { display: none; }
+.camChip .chipMic svg { width: 13px; height: 13px; fill: none; stroke: #ff8a8a; stroke-width: 2; stroke-linecap: round; }
+.camChip.noVoice { opacity: .7; }
+.camChip.noVoice .chipMic { display: inline-flex; }
+.camChip.speaking { outline-color: var(--positive); }
+/* Ninguém de câmera: só as etiquetas, num canto de cima, sem encolher a tela */
+/* (à esquerda: o canto de cima à direita é do painel de desenho) */
+.videoWrap.deckChips .camDeck { top: 0; bottom: auto; left: 0; right: auto; padding: 10px; display: block; max-width: 60%; }
+.videoWrap.deckChips .camChips { justify-content: flex-start; }
+/* Divisa entre a tela e as câmeras (arraste) */
+.deckSplit { position: absolute; z-index: 6; background: transparent; transition: background-color .15s; }
+.deckSide .deckSplit { top: 0; bottom: 0; right: calc(var(--deckW) - 5px); width: 10px; cursor: col-resize; }
+.deckBelow .deckSplit { left: 0; right: 0; bottom: calc(var(--deckH) - 5px); height: 10px; cursor: row-resize; }
+.deckSplit:hover, .deckSplit:active { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+
+/* Cartões minimizados (layout.js): com outro aberto no mesmo lugar, só a barra do título; todos minimizados,
+   ícones (coluna fina à direita, botões pequenos embaixo do vídeo) e o vídeo ganha o espaço */
+.dockMin, .dockIcon, .dockBadge:empty { display: none; }
+@media (min-width: 761px) {
+  .dockMin { display: inline-grid; width: 26px; height: 26px; margin-left: auto; }
+  .dock:not(.min) .dockMin .plus { display: none; }
+  .dockHandle .meta, .dockHandle #uploadEst { order: 2; }
+  .dockBadge {
+    display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+    background: var(--live, #e5484d); color: #fff; font-size: 11px; font-weight: 600; line-height: 1;
+  }
+  .dock.min { flex: none !important; min-height: 0 !important; padding-block: 8px !important; }
+  .dock.min > :not(.dockHandle):not(.voiceBar):not(.dockIcon) { display: none !important; }
+  .dock.min .dockHandle { margin-bottom: 0; }
+  .dock.min .dockHandle :is(.meta, #uploadEst) { display: none; }
+  .dock.min .voiceBar { margin-top: 6px; }
+  .dock.min .voiceBar .btn { flex: 0 0 auto; padding-inline: 10px; }
+  .dock.min .voiceBar .btn span { display: none; }
+
+  /* Todos do lugar minimizados: só ícones */
+  .dockZone.side.allMin { width: 60px; }
+  .dockZone.side.allMin > * { min-width: 0; }
+  .dockZone.allMin > .dock { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px !important; }
+  .dockZone.allMin > .dock > :not(.dockIcon):not(.voiceBar) { display: none !important; }
+  .dockZone.allMin .voiceBar { flex-direction: column; margin: 0; }
+  .dockZone.allMin .voiceBar .btn { width: 40px; height: 40px; min-height: 0; padding: 0; justify-content: center; }
+  .dockZone.allMin .dockIcon {
+    position: relative; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; cursor: pointer;
+    border: 0; border-radius: var(--radius-inner); background: var(--raised); color: var(--text);
+  }
+  .dockZone.allMin .dockIcon:hover { background: var(--accent); color: #fff; }
+  .dockIcon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .dockIcon .dockBadge { position: absolute; top: -6px; right: -6px; }
+  .dockZone[data-zone="below"].allMin { flex-direction: row; align-self: flex-start; }
+  .dockZone[data-zone="below"].allMin .voiceBar { flex-direction: row; }
+}
+
+/* Botão do lugar das câmeras: o desenho mostra onde elas ficam */
+.voicePlaceBtn[data-place="below"] svg rect:first-child { height: 10px; width: 18px; }
+.voicePlaceBtn[data-place="below"] svg .pSide:nth-of-type(2) { x: 3px; y: 17px; width: 8px; height: 4px; }
+.voicePlaceBtn[data-place="below"] svg .pSide:nth-of-type(3) { x: 13px; y: 17px; width: 8px; height: 4px; }
+
+/* Microfone e câmera desligados (dentro da sala): vermelho, em todo lugar onde aparecem */
+.voiceBar :is(.voiceMicBtn, .voiceCamBtn):not(.on):not(:disabled),
+.voiceQuick:not(.on):not(.drawQuick) {
+  color: var(--negative); border-color: color-mix(in srgb, var(--negative) 60%, transparent);
+  background: color-mix(in srgb, var(--negative) 14%, transparent);
+}
+.reactBtn.voiceQuick:not(.on):not(.drawQuick) { background: color-mix(in srgb, var(--negative) 30%, rgba(0, 0, 0, .55)); color: #ffb4b4; }
+
+/* Vidro: o painel de desenho fica quase sólido (o vidro translúcido sobre o vídeo deixava tudo ilegível) */
+[data-theme^="vidro"] .drawPanel { background: color-mix(in srgb, var(--solid) 94%, transparent); backdrop-filter: blur(20px) saturate(1.3); border-color: var(--glass-edge); }

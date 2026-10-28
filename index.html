@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'self' https: wss:">
+  <title>Telinha · assistir</title>
+  <script src="version.js"></script>
+  <script src="shim.js"></script>
+  <script src="theme-boot.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="themes.css">
+  <link rel="stylesheet" href="themes-shape.css">
+  <link rel="stylesheet" href="web.css">
+</head>
+<body>
+  <canvas id="ambient" class="ambient" aria-hidden="true"></canvas>
+  <!-- Lente do tema Vidro (completo): desloca o fundo por trás dos controles pequenos, como vidro curvo -->
+  <svg class="svgDefs" aria-hidden="true" focusable="false">
+    <filter id="telinha-lens" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.014" numOctaves="2" seed="7" result="noise"/>
+      <feGaussianBlur in="noise" stdDeviation="2" result="soft"/>
+      <feDisplacementMap in="SourceGraphic" in2="soft" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
+  <div class="shell">
+    <!-- ===================== BARRA LATERAL ===================== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="2" y="4" width="20" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M8 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="11" r="2.4" fill="currentColor"/>
+        </svg>
+        <span class="brandName">Telinha</span>
+        <button class="iconBtn navToggle" id="navToggle" type="button" title="Recolher a barra lateral" aria-label="Recolher a barra lateral" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 7 9.5 12l5 5"/></svg></button>
+      </div>
+      <nav class="nav" aria-label="Principal">
+        <button class="navItem active" data-view="home" title="Início"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="navLabel" data-short="Início">Início</span> <span id="liveBadge" class="badge hidden" title="Amigos ao vivo">0</span></button>
+        <button class="navItem" data-view="host" title="Transmitir"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2"/></svg><span class="navLabel" data-short="Transmitir">Transmitir</span> <span id="hostBadge" class="badge hidden">Ao vivo</span></button>
+        <button class="navItem" data-view="watch" title="Assistir"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.2 15 12l-5 2.8z"/></svg><span class="navLabel" data-short="Assistir">Assistir</span></button>
+        <button class="navItem" data-view="friends" title="Amigos"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.4a6.5 6.5 0 0 1 3.5 5.6"/></svg><span class="navLabel" data-short="Amigos">Amigos</span></button>
+        <button class="navItem" data-view="requests" title="Pedidos"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l1.5 3h5l1.5-3h5"/><path d="M5.2 5h13.6L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/></svg><span class="navLabel" data-short="Pedidos">Pedidos</span> <span id="requestBadge" class="badge hidden" title="Pedidos esperando você">0</span></button>
+        <button class="navItem" data-view="diag" id="diagBtn" title="Diagnóstico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-7 5 14 2.5-7h4"/></svg><span class="navLabel" data-short="Diagnóstico">Diagnóstico</span></button>
+      </nav>
+      <div class="sideFoot">
+        <button class="navItem" data-view="settings" id="themeBtn" title="Configurações"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M18 6h2M4 12h3M12 12h8M4 18h11M20 18h0"/><circle cx="15.5" cy="6" r="2.2"/><circle cx="9.5" cy="12" r="2.2"/><circle cx="17.5" cy="18" r="2.2"/></svg><span class="navLabel" data-short="Ajustes">Configurações</span></button>
+        <span class="version" id="appVersion"></span>
+      </div>
+    </aside>
+
+    <!-- ===================== TOPO ===================== -->
+    <header class="topbar">
+      <div class="addFriend">
+        <label class="sr" for="friendCode">Código do amigo</label>
+        <input id="friendCode" maxlength="9" placeholder="Adicionar amigo pelo código, ex.: ABCD-EFGH" autocomplete="off">
+        <button id="addFriend" class="btn">Adicionar</button>
+      </div>
+      <div id="peerStatus" class="pill">Conectando…</div>
+      <button id="myCodeBtn" class="account" title="Copiar seu código">
+        <span class="accName" id="accName"></span>
+        <span class="accCode" id="myCode">…</span>
+      </button>
+    </header>
+
+    <div id="updateBar" class="updateBar hidden">
+      <span id="updateText"></span>
+      <button id="updateNow" class="btn primary hidden">Reiniciar e atualizar</button>
+    </div>
+
+    <div class="views">
+      <!-- ===================== INÍCIO ===================== -->
+      <main id="home" class="view screen active">
+        <div class="titleRow">
+          <div>
+            <h1 class="viewTitle" id="homeTitle">Início</h1>
+            <p class="finding" id="homeFinding"></p>
+            <button id="homeBackWatch" class="btn primary hidden" type="button">Voltar para a transmissão</button>
+          </div>
+          <span class="stamp" id="homeStamp"></span>
+        </div>
+        <div class="homeGrid">
+          <div class="col">
+            <section class="card" aria-labelledby="liveTitle">
+              <div class="cardHead">
+                <h2 id="liveTitle">Ao vivo agora <span class="muted" id="homeLiveCount"></span></h2>
+                <span class="meta">Amigos transmitindo neste momento</span>
+              </div>
+              <div class="screens" id="homeLive"></div>
+            </section>
+            <section class="card grow" aria-labelledby="othersTitle">
+              <div class="cardHead">
+                <h2 id="othersTitle">Outros amigos <span class="muted" id="homeOthersCount"></span></h2>
+                <button class="textLink" data-go="friends">Ver todos</button>
+              </div>
+              <ul class="people" id="homeOthers"></ul>
+            </section>
+          </div>
+          <div class="col">
+            <section class="card" aria-labelledby="homeReqTitle">
+              <div class="cardHead">
+                <h2 id="homeReqTitle">Pedidos <span class="muted" id="homeReqCount"></span></h2>
+                <button class="textLink" data-go="requests">Ver todos</button>
+              </div>
+              <ul class="reqList" id="homeRequests"></ul>
+            </section>
+            <section class="card grow desktopOnly" aria-labelledby="mineTitle">
+              <div class="cardHead">
+                <h2 id="mineTitle">Sua transmissão</h2>
+                <button class="btn" data-go="host" id="homeMineAction">Transmitir</button>
+              </div>
+              <div id="homeMine"></div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <!-- ===================== TRANSMITIR ===================== -->
+      <main id="host" class="view">
+        <aside class="panel">
+          <div class="panelHead"><h1 class="viewTitle">Transmitir</h1><button class="iconBtn panelToggle" type="button" data-panel-toggle title="Recolher o painel" aria-label="Recolher o painel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 7 9.5 12l5 5"/></svg></button></div>
+          <p class="muted small webHostNote">Pelo navegador: a tela é escolhida na janela do navegador e a sala acaba se você fechar esta aba. Para mandar o som do PC sem o eco do Discord e ver desenhos e chat na sua própria tela, use o app.</p>
+          <h2>Sala</h2>
+          <label>Quem pode entrar
+            <select id="roomMode">
+              <option value="private" selected>Privada: você aprova cada pessoa</option>
+              <option value="public">Pública: qualquer um com seu código</option>
+            </select>
+          </label>
+          <label class="check"><input id="allowPoint" type="checkbox" checked> Deixar quem assiste apontar na minha tela</label>
+
+          <h2>Fonte</h2>
+          <button id="pickSource" class="btn wide">Escolher tela ou janela</button>
+          <div id="sourceName" class="muted small">Nenhuma fonte escolhida</div>
+
+          <h2>Qualidade</h2>
+          <label>Resolução
+            <select id="res">
+              <option value="720">720p</option>
+              <option value="1080" selected>1080p</option>
+              <option value="1440">1440p</option>
+              <option value="0">Nativa</option>
+            </select>
+          </label>
+          <label>Quadros por segundo
+            <select id="fps">
+              <option value="30">30 fps</option>
+              <option value="60" selected>60 fps (máximo da captura do Chromium)</option>
+            </select>
+          </label>
+          <label>Bitrate <span id="mbpsLabel" class="value">12 Mbps</span>
+            <input id="mbps" type="range" min="2" max="60" step="1" value="12">
+          </label>
+          <label>Codec
+            <select id="codec">
+              <option value="H264" selected>H.264 (recomendado)</option>
+              <option value="AV1">AV1 (mais qualidade por Mbps; hardware em RTX 40/50 e Radeon RX 7000)</option>
+              <option value="VP9">VP9 (CPU)</option>
+            </select>
+          </label>
+          <label>Prioridade
+            <select id="hint">
+              <option value="motion" selected>Movimento (jogos, vídeos)</option>
+              <option value="detail">Nitidez (texto, código)</option>
+            </select>
+          </label>
+
+          <details class="advanced desktopOnly">
+            <summary>Avançado <span class="infoTip" tabindex="0" role="img" aria-label="Qual placa e qual codificador comprimem a sua transmissão. No automático o Telinha já escolhe o melhor da sua placa; troque se a transmissão estiver pesada ou travando. Vale ao reabrir." data-tip="Qual placa e qual codificador comprimem a sua transmissão. No automático o Telinha já escolhe o melhor da sua placa; troque se a transmissão estiver pesada ou travando. Vale ao reabrir.">i</span></summary>
+            <label>Placa de vídeo
+              <select id="gpuPref">
+                <option value="high">Dedicada (alto desempenho)</option>
+                <option value="low">Integrada (economia de energia)</option>
+                <option value="auto">Deixar o Windows escolher</option>
+              </select>
+            </label>
+            <label>Codificador
+              <select id="encoderPref">
+                <option value="auto">Automático (recomendado)</option>
+                <option value="mf">Media Foundation (NVENC, AMF da AMD, Quick Sync)</option>
+                <option value="d3d12">DirectX 12</option>
+                <option value="cpu">CPU (software)</option>
+              </select>
+            </label>
+            <p class="small" id="gpuNow"></p>
+            <button class="btn wide hidden" id="gpuRelaunch" type="button">Reabrir agora</button>
+          </details>
+
+          <h2>Som</h2>
+          <label class="check"><input id="audio" type="checkbox" checked> Enviar som do PC</label>
+          <p id="audioMode" class="muted small">O som do Discord é retirado automaticamente.</p>
+
+          <button id="startHost" class="btn primary wide">Iniciar transmissão</button>
+          <button id="presentBtn" class="btn wide hidden" type="button">Parar de apresentar (a sala continua)</button>
+          <p id="presenterInfo" class="muted small hidden"></p>
+          <button id="stopPresenter" class="btn wide hidden" type="button"></button>
+          <button id="stopHost" class="btn danger wide hidden">Encerrar a sala</button>
+          <div class="dockZone" data-zone="panel">
+          <section class="card dock voiceCard" data-dock="voice" aria-labelledby="voiceHostTitle">
+            <div class="cardHead dockHandle" title="Arraste para mudar de lugar"><h2 id="voiceHostTitle">Câmera e voz</h2><span class="meta voiceMeta"></span></div>
+            <div class="voiceTiles hidden"></div>
+            <div class="voiceBar">
+              <button class="btn voiceMicBtn" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Microfone</span></button>
+              <button class="btn voiceCamBtn" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/></svg><span>Câmera</span></button>
+              <button class="btn voiceTalkBtn hidden" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg><span>Conversa</span></button>
+              <button class="btn voicePlaceBtn hidden" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="12" height="14" rx="1.5"/><rect class="pSide" x="17" y="5" width="4" height="6" rx="1"/><rect class="pSide" x="17" y="13" width="4" height="6" rx="1"/></svg><span>Do lado</span></button>
+            </div>
+          </section>
+          </div>
+        </aside>
+        <button class="panelOpen" type="button" data-panel-toggle title="Mostrar o painel" aria-label="Mostrar o painel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 7l5 5-5 5"/></svg></button>
+
+        <section class="stage">
+          <div class="stageMain">
+          <div id="liveBox" class="card liveBox hidden">
+            <span class="liveDot"></span>
+            <div>
+              <div><b>Ao vivo</b> · <span id="liveMode"></span></div>
+              <div class="muted small">Seus amigos veem você na lista deles. Para a call do Discord, copie o convite: quem clicar já entra. Seu código: <b id="liveCode"></b></div>
+            </div>
+            <button class="btn primary liveInvite" id="copyInvite" type="button">Copiar convite</button>
+          </div>
+
+          <div class="videoWrap">
+            <video id="preview" autoplay muted playsinline></video>
+            <div id="previewEmpty" class="empty">Escolha uma fonte e clique em Iniciar transmissão</div>
+            <div class="markLayer" id="pointHost"></div>
+            <div class="reactLayer" id="reactHost"></div>
+          </div>
+
+          <div class="dockZone" data-zone="below">
+          <div class="card dock" data-dock="viewers">
+            <div class="row between dockHandle" title="Arraste para mudar de lugar">
+              <h3>Espectadores <span id="viewerCount" class="muted">0</span></h3>
+              <span id="uploadEst" class="muted small"></span>
+            </div>
+            <div id="viewers" class="viewers"><div class="muted small">Ninguém conectado ainda</div></div>
+          </div>
+
+          <section class="card dock" data-dock="chat" aria-labelledby="chatHostTitle">
+            <div class="cardHead dockHandle" title="Arraste para mudar de lugar"><h2 id="chatHostTitle">Chat da sala</h2><span class="meta">Quem está assistindo vê e responde</span></div>
+            <label class="check chatFlyOpt"><input type="checkbox" class="chatFly" checked> Mensagens voando no vídeo</label>
+            <ul id="chatHostList" class="chatList"></ul>
+            <form id="chatHostForm" class="chatForm">
+              <input id="chatHostInput" maxlength="300" placeholder="Escreva para quem está assistindo" autocomplete="off" aria-label="Mensagem para a sala">
+              <button class="btn" type="submit">Enviar</button>
+            </form>
+          </section>
+          </div>
+          </div>
+          <div class="dockZone side" data-zone="right"></div>
+        </section>
+      </main>
+
+      <!-- ===================== ASSISTIR ===================== -->
+      <main id="watch" class="view">
+        <aside class="panel">
+          <div class="panelHead"><h1 class="viewTitle">Assistir</h1><button class="iconBtn panelToggle" type="button" data-panel-toggle title="Recolher o painel" aria-label="Recolher o painel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 7 9.5 12l5 5"/></svg></button></div>
+          <div id="watchWho" class="watchWho"></div>
+          <h2>Reprodução</h2>
+          <label>Volume <span id="volLabel" class="value">100%</span>
+            <input id="vol" type="range" min="0" max="100" value="100">
+          </label>
+          <label>Qualidade
+            <select id="quality">
+              <option value="auto" selected>Máxima (a de quem transmite)</option>
+              <option value="eco">Economia de dados: 720p, 3 Mbps</option>
+              <option value="low">Mínima: 480p, 1,2 Mbps</option>
+            </select>
+          </label>
+          <label class="check"><input id="lowLatency" type="checkbox" checked> Latência mínima</label>
+          <button id="pipBtn" class="btn wide" type="button">Picture-in-picture</button>
+          <p class="muted small desktopOnly">Duplo clique no vídeo = tela cheia. Tecla S mostra ou esconde as estatísticas.</p>
+
+          <h2>Ajudar</h2>
+          <button id="pointBtn" class="btn wide" type="button">Apontar na tela</button>
+          <button id="drawBtn" class="btn wide" type="button">Desenhar na tela</button>
+          <button id="watchPresent" class="btn wide desktopOnly" type="button">Apresentar minha tela</button>
+          <p id="watchPresentInfo" class="muted small desktopOnly"></p>
+          <p class="muted small">Apontar: um ponto ou risco que some em segundos. Desenhar: pincel, formas e cores que ficam até alguém apagar. Todos da sala veem, e quem transmite vê na própria tela.</p>
+
+          <div class="dockZone grow" data-zone="panel">
+            <section class="card dock voiceCard" data-dock="voice" aria-labelledby="voiceWatchTitle">
+            <div class="cardHead dockHandle" title="Arraste para mudar de lugar"><h2 id="voiceWatchTitle">Câmera e voz</h2><span class="meta voiceMeta"></span></div>
+            <div class="voiceTiles hidden"></div>
+            <div class="voiceBar">
+              <button class="btn voiceMicBtn" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Microfone</span></button>
+              <button class="btn voiceCamBtn" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/></svg><span>Câmera</span></button>
+              <button class="btn voiceTalkBtn hidden" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg><span>Conversa</span></button>
+              <button class="btn voicePlaceBtn hidden" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="12" height="14" rx="1.5"/><rect class="pSide" x="17" y="5" width="4" height="6" rx="1"/><rect class="pSide" x="17" y="13" width="4" height="6" rx="1"/></svg><span>Do lado</span></button>
+            </div>
+          </section>
+            <section class="card dock" data-dock="chat" aria-labelledby="chatWatchTitle">
+              <div class="cardHead dockHandle" title="Arraste para mudar de lugar"><h2 id="chatWatchTitle">Chat</h2></div>
+              <label class="check chatFlyOpt"><input type="checkbox" class="chatFly" checked> Mensagens voando no vídeo</label>
+              <ul id="chatWatchList" class="chatList grow"></ul>
+              <form id="chatWatchForm" class="chatForm">
+                <input id="chatWatchInput" maxlength="300" placeholder="Escreva para a sala" autocomplete="off" aria-label="Mensagem para a sala">
+                <button class="btn" type="submit">Enviar</button>
+              </form>
+            </section>
+          </div>
+        </aside>
+        <button class="panelOpen" type="button" data-panel-toggle title="Mostrar o painel" aria-label="Mostrar o painel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 7l5 5-5 5"/></svg></button>
+        <section class="stage">
+          <div class="stageMain">
+          <div class="videoWrap" id="watchWrap">
+            <video id="remote" autoplay playsinline></video>
+            <div id="remoteEmpty" class="empty">Escolha um amigo ao vivo no Início e clique em Assistir</div>
+            <pre id="remoteStats" class="overlay hidden"></pre>
+            <div class="markLayer" id="pointWatch"></div>
+            <div class="reactLayer" id="reactWatch"></div>
+            <div class="reactBar" id="reactBar" role="group" aria-label="Reações"></div>
+            <button id="fullscreen" class="btn fsBtn hidden">Tela cheia</button>
+            <button id="unmuteBtn" class="unmuteBtn hidden" type="button">Tocar som</button>
+          </div>
+          <div class="dockZone" data-zone="below"></div>
+          </div>
+          <div class="dockZone side" data-zone="right"></div>
+        </section>
+      </main>
+
+      <!-- ===================== AMIGOS ===================== -->
+      <main id="friendsView" class="view screen">
+        <div class="titleRow">
+          <div>
+            <h1 class="viewTitle">Amigos</h1>
+            <p class="finding" id="friendsFinding"></p>
+          </div>
+          <button class="btn" id="copyMyCode">Copiar meu código</button>
+        </div>
+        <section class="card">
+          <div id="friends" class="friends"></div>
+        </section>
+      </main>
+
+      <!-- ===================== PEDIDOS ===================== -->
+      <main id="requestsView" class="view screen">
+        <div class="titleRow">
+          <div>
+            <h1 class="viewTitle">Pedidos</h1>
+            <p class="finding" id="requestsFinding"></p>
+          </div>
+        </div>
+        <div class="twoCol">
+          <section class="card" aria-labelledby="joinReqTitle">
+            <div class="cardHead"><h2 id="joinReqTitle">Querem assistir você <span class="muted" id="joinReqCount"></span></h2></div>
+            <ul class="reqList" id="joinRequests"></ul>
+          </section>
+          <section class="card" aria-labelledby="friendReqTitle">
+            <div class="cardHead"><h2 id="friendReqTitle">Pedidos de amizade <span class="muted" id="friendReqCount"></span></h2></div>
+            <div id="friendRequests" class="reqList"></div>
+            <h3 class="subHead">Enviados por você</h3>
+            <ul class="reqList" id="sentRequests"></ul>
+          </section>
+        </div>
+      </main>
+
+      <!-- ===================== DIAGNÓSTICO ===================== -->
+      <main id="diag" class="view screen">
+        <div class="titleRow">
+          <div>
+            <h1 class="viewTitle">Diagnóstico</h1>
+            <p class="finding">O que o próprio WebRTC está usando: codec negociado, encoder, hardware ou CPU, latência.</p>
+          </div>
+          <div class="row">
+            <button id="diagRefresh" class="btn">Atualizar</button>
+            <button id="diagCopy" class="btn">Copiar</button>
+            <button id="diagInternals" class="btn">Abrir webrtc-internals</button>
+            <button id="diagClose" class="hidden" tabindex="-1" aria-hidden="true"></button>
+          </div>
+        </div>
+        <section class="card"><pre id="diagText" class="diagText"></pre></section>
+      </main>
+
+      <!-- ===================== CONFIGURAÇÕES ===================== -->
+      <main id="themes" class="view screen">
+        <div class="titleRow">
+          <div>
+            <h1 class="viewTitle">Configurações</h1>
+            <p class="finding">Seu nome, o visual do app e a conexão.</p>
+          </div>
+        </div>
+        <section class="card">
+          <div class="cardHead"><h2>Você</h2></div>
+          <label class="narrowField">Seu nome<input id="myName" maxlength="24" placeholder="Ex.: João"></label>
+          <button class="btn webOnly diagLink" type="button" data-go="diag">Abrir o diagnóstico</button>
+        </section>
+        <section class="card">
+          <div class="cardHead"><h2>Tema</h2><span class="meta">Muda na hora e fica salvo neste PC</span></div>
+          <div id="themeGrid" class="themeGrid"></div>
+          <div id="modeRow" class="modeRow hidden">
+            <label>Aparência
+              <select id="themeMode">
+                <option value="light">Clara</option>
+                <option value="dark">Escura</option>
+                <option value="auto">Seguir o Windows</option>
+              </select>
+            </label>
+          </div>
+          <div class="themeOptions" id="reduceRow">
+            <label class="ambientFpsField">Fluidez do reflexo
+              <select id="ambientFps">
+                <option value="15">15 fps: leve, para PC mais fraco</option>
+                <option value="30" selected>30 fps: equilibrado</option>
+                <option value="60">60 fps: o mais liso, usa mais a placa de vídeo</option>
+              </select>
+            </label>
+            <label class="check"><input type="checkbox" id="reduceTransparency"> Reduzir transparência (painéis sólidos, sem desfoque)</label>
+          </div>
+          <div class="layoutReset desktopOnly">
+            <button class="btn" id="resetLayout" type="button">Restaurar o layout padrão</button>
+            <span class="muted small">Barra lateral, painel e lugar dos cartões. Para mudar um cartão de lugar, arraste pelo título.</span>
+          </div>
+          <button id="closeThemes" class="hidden" tabindex="-1" aria-hidden="true"></button>
+        </section>
+        <section class="card desktopOnly" aria-labelledby="phoneTitle">
+          <div class="cardHead"><h2 id="phoneTitle">Assistir pelo celular</h2><span class="meta">Android e iPhone, pelo navegador, sem instalar</span></div>
+          <p class="phoneText">Abra no celular: <b id="webLink">https://guilhermeo12.github.io/telinha/</b>. Ele ganha um código próprio; adicione o código do PC e aceite o pedido de amizade aqui. Dá para adicionar à tela inicial e abrir como um app.</p>
+          <button class="btn" id="copyWebLink" type="button">Copiar link</button>
+        </section>
+        <section class="card" aria-labelledby="backupTitle">
+          <div class="cardHead"><h2 id="backupTitle">Meus dados</h2><span class="meta">Para trocar de PC ou formatar sem perder nada</span></div>
+          <div class="row wrapRow">
+            <button class="btn" id="backupExport" type="button">Salvar backup (.zip)</button>
+            <button class="btn" id="backupImport" type="button">Restaurar backup</button>
+            <input type="file" id="backupFile" accept=".zip,application/zip" hidden>
+          </div>
+          <p class="muted small">Leva o seu código de amigo, a sua chave (com ela os amigos continuam reconhecendo você), a lista de amigos, as configurações e as suas figurinhas. Guarde como uma senha: quem tiver o arquivo consegue se passar por você. O webhook do Discord e a senha de um TURN próprio ficam de fora.</p>
+        </section>
+
+
+        <section class="card" aria-labelledby="devicesTitle">
+          <div class="cardHead"><h2 id="devicesTitle">Câmera e microfone</h2><span class="meta">Para conversar na sala; ligue pelo cartão Câmera e voz</span></div>
+          <div class="deviceGrid">
+            <label>Câmera <select id="camDevice"></select></label>
+            <label>Microfone <select id="micDevice"></select></label>
+            <label>Resolução da câmera
+              <select id="camRes">
+                <option value="360">360p (leve, ~0,6 Mbps por pessoa)</option>
+                <option value="480">480p (~0,9 Mbps por pessoa)</option>
+                <option value="720">720p HD (~1,5 Mbps por pessoa)</option>
+                <option value="1080">1080p Full HD (~2,5 Mbps por pessoa)</option>
+              </select>
+            </label>
+            <label>Volume do seu microfone <span id="micGainLabel" class="value">100%</span>
+              <input id="micGain" type="range" min="0" max="200" step="5" value="100">
+              <span class="micMeter idle" aria-hidden="true"><i id="micMeter"></i></span>
+            </label>
+          </div>
+          <p class="muted small">A câmera e a voz vão direto para cada pessoa da sala, separadas da tela, e cada pessoa recebe uma cópia: quanto maior a resolução, mais internet você usa. Com mais de 5 pessoas a câmera vai com metade da resolução. O medidor mostra o seu microfone enquanto ele está ligado. Os nomes dos aparelhos aparecem depois da primeira vez que você liga.</p>
+        </section>
+
+        <section class="card desktopOnly" aria-labelledby="discordTitle">
+          <div class="cardHead"><h2 id="discordTitle">Discord</h2><span class="meta">Para quem está na call entrar com um clique</span></div>
+          <div class="discordGrid">
+            <div class="discordCol">
+              <h3>Status com botão "Assistir"</h3>
+              <label class="check"><input id="discordPresence" type="checkbox"> Mostrar no meu perfil quando eu transmitir ou assistir</label>
+              <p class="muted small">É só ligar. O Discord precisa estar aberto neste PC. O botão aparece para os outros, não no seu próprio perfil.</p>
+              <details class="small">
+                <summary class="muted">Usar outro aplicativo do Discord</summary>
+                <label>ID do aplicativo (deixe vazio para usar o do Telinha)
+                  <input id="discordAppId" inputmode="numeric" maxlength="22" placeholder="1564418586448232681" autocomplete="off">
+                </label>
+              </details>
+              <p class="small discordStatus" id="discordStatus"></p>
+            </div>
+            <div class="discordCol">
+              <h3>Aviso no canal</h3>
+              <label>Webhook do canal
+                <input id="discordWebhook" type="password" placeholder="https://discord.com/api/webhooks/…" autocomplete="off" spellcheck="false">
+              </label>
+              <p class="muted small">No Discord: Editar canal › Integrações › Webhooks › Novo webhook › Copiar URL do webhook. Quando você entra no ar, o Telinha posta o convite lá; quando sai, a mensagem muda para "terminou". A URL fica só neste PC.</p>
+              <button class="btn" id="discordTest" type="button">Enviar mensagem de teste</button>
+            </div>
+          </div>
+        </section>
+        <section class="card" aria-labelledby="netTitle">
+          <div class="cardHead"><h2 id="netTitle">Ligação</h2><span class="meta">Como o vídeo vai de um PC para o outro. Vale para as próximas conexões.</span></div>
+          <div class="netModes" role="radiogroup" aria-labelledby="netTitle">
+            <label class="netMode">
+              <input type="radio" name="netMode" value="auto">
+              <span class="netModeBody">
+                <b>Automática <span class="netTag">recomendada</span></b>
+                <span class="muted small">Tenta direto; se a rede não deixar, passa pelo servidor do Telinha sem você fazer nada.</span>
+                <ul class="netPros"><li class="pro">Conecta quase sempre, com o menor atraso possível em cada caso</li><li class="con">Quando a ligação é direta, quem conecta com você vê o seu IP</li></ul>
+              </span>
+            </label>
+            <label class="netMode">
+              <input type="radio" name="netMode" value="direct">
+              <span class="netModeBody">
+                <b>Direta (P2P)</b>
+                <span class="muted small">O vídeo vai direto de um PC para o outro, nunca pelo servidor.</span>
+                <ul class="netPros"><li class="pro">Menor atraso e qualidade máxima, sem limite de banda do servidor</li><li class="pro">Funciona mesmo se o servidor do Telinha estiver fora do ar</li><li class="con">Em algumas redes não conecta: CGNAT, 4G, Wi-Fi de faculdade ou empresa</li><li class="con">Quem conecta com você vê o seu IP</li></ul>
+              </span>
+            </label>
+            <label class="netMode">
+              <input type="radio" name="netMode" value="server">
+              <span class="netModeBody">
+                <b>Pelo servidor</b>
+                <span class="muted small">Todo o vídeo passa pelo servidor do Telinha, no Brasil.</span>
+                <ul class="netPros"><li class="pro">Conecta em praticamente qualquer rede</li><li class="pro">Esconde o seu IP: os outros só veem o do servidor</li><li class="con">Um pouco mais de atraso, e o bitrate fica em no máximo 20 Mbps</li><li class="con">A banda do servidor é dividida com todo mundo; se ele cair, a conexão cai</li></ul>
+              </span>
+            </label>
+          </div>
+          <p class="small netNow" id="netNow"></p>
+          <details class="small netCustom">
+            <summary class="muted">Usar um TURN próprio</summary>
+            <p class="muted small">Só se você tiver um servidor TURN seu. Ele entra junto com o do Telinha (não vale na ligação Direta).</p>
+            <div class="turnGrid">
+              <label>URL<input id="turnUrl" placeholder="turn:meuservidor.com:3478"></label>
+              <label>Usuário<input id="turnUser"></label>
+              <label>Senha<input id="turnPass" type="password"></label>
+            </div>
+          </details>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ===================== SELETOR DE FONTE ===================== -->
+  <div id="picker" class="modal hidden">
+    <div class="modalBox">
+      <div class="row between">
+        <h2>O que você quer transmitir?</h2>
+        <button id="closePicker" class="btn">Fechar</button>
+      </div>
+      <div id="sourceGrid" class="grid"></div>
+    </div>
+  </div>
+
+  <!-- ===================== PEDIDO DE ENTRADA (sala privada) ===================== -->
+  <div id="prompt" class="modal hidden">
+    <div class="modalBox narrow">
+      <h2 id="promptTitle"></h2>
+      <p id="promptSub" class="muted"></p>
+      <label class="check"><input id="promptRemember" type="checkbox"> Sempre permitir esta pessoa</label>
+      <div class="row end">
+        <button id="promptDeny" class="btn danger">Recusar</button>
+        <button id="promptAccept" class="btn primary">Aceitar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="inviteModal" class="modal hidden">
+    <div class="modalBox narrow">
+      <h2>Convite para assistir <span id="inviteWho"></span></h2>
+      <p class="muted">Tem o Telinha instalado neste PC? Ele abre já entrando na transmissão. Se não, dá para assistir aqui no navegador.</p>
+      <p id="inviteAppHint" class="muted small hidden">Não abriu? <a href="https://github.com/guilhermeo12/telinha/releases/latest" target="_blank" rel="noopener">Baixe o Telinha</a> ou assista aqui.</p>
+      <div class="row end">
+        <button id="inviteHere" class="btn" type="button">Assistir no navegador</button>
+        <button id="inviteApp" class="btn primary" type="button">Abrir no app</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="peerjs.min.js"></script>
+  <script src="charts.js"></script>
+  <script src="sdp.js"></script>
+  <script src="app.js"></script>
+  <script src="room.js"></script>
+  <script src="zip.js"></script>
+  <script src="sticker-db.js"></script>
+  <script src="stickers.js"></script>
+  <script src="backup.js"></script>
+  <script src="present.js"></script>
+  <script src="draw-engine.js"></script>
+  <script src="draw.js"></script>
+  <script src="home.js"></script>
+  <script src="themes.js"></script>
+  <script src="layout.js"></script>
+  <script src="share.js"></script>
+  <script src="voice.js"></script>
+</body>
+</html>

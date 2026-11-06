@@ -1,0 +1,43 @@
+/* Telinha TV · uma tela só (tv.js) e, assistindo, nada além do vídeo. Cores fixas: sempre o tema mais leve, o Preto. */
+.tv .shell > :not(.views), .tv .views > :not(#watch), .tv #watch .panel, .tv .panelOpen, .tv #watch .dockZone,
+.tv #watchWrap :is(.reactBar, .reactLayer, .markLayer, .fsBtn, .overlay), .tv #ambient { display: none !important; }
+
+.tv #tvApp { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; gap: 18px; padding: 26px 44px; background: #000; color: #fff; }
+.tv.immersive #tvApp { display: none; }
+.tv .toast { z-index: 40; }
+.tv #tvApp .hidden { display: none !important; }
+.tv #tvApp h1 { margin: 0 0 12px; font-size: 26px; }
+.tv #tvApp :focus { outline: 4px solid #fff; outline-offset: 3px; }
+
+.tvHead { display: flex; align-items: center; gap: 16px; font-size: 16px; color: #aaa; }
+.tvBrand { font-size: 22px; color: #fff; }
+.tvMine { margin-left: auto; font-size: 18px; color: #fff; letter-spacing: .04em; }
+
+.tvLogin { flex: 1; min-height: 0; display: flex; align-items: center; gap: 44px; }
+.tvQr { height: 100%; max-height: 330px; aspect-ratio: 1; border-radius: 10px; background: #fff; }
+.tvSteps p { margin: 0 0 10px; font-size: 20px; color: #ccc; }
+
+.tvList { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.tvRows { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 6px; }
+.tvRow { flex: none; display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 20px; border: 0; border-radius: 12px; background: #161616; color: #888; font: inherit; font-size: 20px; text-align: left; }
+.tvRow.live { background: #222; color: #fff; }
+.tvDot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: #444; }
+.tvRow.live .tvDot { background: #ff4d4d; }
+.tvName { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; }
+.tvInfo { font-size: 16px; }
+.tvEmpty { margin: 0; font-size: 18px; color: #aaa; }
+
+.tvFoot { display: flex; align-items: center; gap: 12px; }
+.tvFoot input { flex: 1; min-width: 0; height: 46px; padding: 0 16px; border: 1px solid #444; border-radius: 12px; background: #111; color: #fff; font: inherit; font-size: 17px; }
+.tvFoot .btn { flex: none; height: 46px; }
+
+/* Qualidade: só existe na tela enquanto está aberta, por cima do vídeo */
+#tvQuality { position: fixed; right: 32px; top: 50%; translate: 0 -50%; z-index: 35; width: min(480px, 90vw); display: flex; flex-direction: column; gap: 8px; padding: 22px; border-radius: 16px; background: #111; color: #fff; }
+#tvQuality.hidden { display: none; }
+#tvQuality h2 { margin: 0 0 6px; font-size: 22px; }
+#tvQuality :focus { outline: 4px solid #fff; outline-offset: 2px; }
+.tvQRow { display: flex; justify-content: space-between; align-items: center; min-height: 50px; padding: 0 16px; border: 0; border-radius: 10px; background: #222; color: #fff; font: inherit; font-size: 18px; }
+.tvQRow.off { color: #888; }
+.tvQLive { margin: 6px 0 0; font-size: 16px; color: #ddd; }
+.tvQHelp { margin: 0; font-size: 14px; color: #888; }
+.tv .music { display: none !important; }
